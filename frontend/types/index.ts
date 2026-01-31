@@ -2,30 +2,33 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'USER' | 'ADMIN';
+  role: 'admin' | 'owner' | 'renter';
 }
 
 export interface Property {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   price: number;
-  availability: boolean;
   location: string;
-  owner: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  images?: string[];
+  images: string[];
+  ownerId: string;
+  status: 'available' | 'rented';
 }
 
 export interface Booking {
-  _id: string;
-  user: string | { _id: string; name: string; email: string };
-  property: string | Property;
+  id: string;
+  propertyId: string;
+  renterId: string;
   startDate: string;
   endDate: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
   totalPrice: number;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED';
+  property?: Property;
+  renter?: User;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
 }
