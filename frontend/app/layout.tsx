@@ -32,10 +32,10 @@ export default function RootLayout({
       >
         <AuthProvider>
           <Navbar />
-          <main className="flex-grow container mx-auto px-4 py-8">
+          <main>
             {children}
           </main>
-          <Footer />
+          <Toaster position="top-right" />
         </AuthProvider>
       </body>
     </html>
