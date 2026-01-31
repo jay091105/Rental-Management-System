@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { Package, LogOut, User as UserIcon, Menu, X, ShoppingCart } from 'lucide-react';
@@ -8,11 +8,35 @@ import { Package, LogOut, User as UserIcon, Menu, X, ShoppingCart } from 'lucide
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState<number>(0);
 
   const handleLogout = () => {
     logout();
     setMobileMenuOpen(false);
   };
+
+  // Poll provider orders count when provider is signed in
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const fetchCount = async () => {
+      if (user?.role === 'provider') {
+        try {
+          const data = await (await import('@/services/api')).orderService.getProviderOrders();
+          const list = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+          const count = Array.isArray(list) ? list.filter((o: any) => o.status === 'pending').length : 0;
+          setPendingCount(count);
+        } catch (err) {
+          // ignore polling errors
+          console.error('Failed to fetch provider orders count', err);
+        }
+      } else {
+        setPendingCount(0);
+      }
+    };
+    fetchCount();
+    timer = setInterval(fetchCount, 30000);
+    return () => { if (timer) clearInterval(timer); };
+  }, [user]);
 
   return (
     <nav className="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm">
@@ -32,8 +56,11 @@ const Navbar = () => {
               Products
             </Link>
 
-            <Link href="/orders" className="text-gray-600 hover:text-blue-600 font-medium transition">
+            <Link href="/orders" className="relative text-gray-600 hover:text-blue-600 font-medium transition">
               Orders
+              {pendingCount > 0 && user?.role === 'provider' && (
+                <span className="absolute -top-2 -right-3 inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">{pendingCount}</span>
+              )}
             </Link>
 
             <Link href="/invoices" className="text-gray-600 hover:text-blue-600 font-medium transition">

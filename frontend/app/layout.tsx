@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { OrderProvider } from "@/context/OrderContext";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "react-hot-toast";
 
@@ -31,11 +32,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen bg-surface-50`}
       >
         <AuthProvider>
-          <Navbar />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Toaster position="top-right" />
+          <OrderProvider>
+            <Navbar />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Toaster position="top-right" />
+          </OrderProvider>
         </AuthProvider>
       </body>
     </html>

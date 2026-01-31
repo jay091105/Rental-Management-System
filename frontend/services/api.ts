@@ -98,6 +98,18 @@ export const orderService = {
   getById: async (id: string) => {
     const response = await api.get(`/orders/${id}`);
     return response.data;
+  },
+  getMyOrders: async () => {
+    const response = await api.get('/orders/my');
+    return response.data;
+  },
+  getProviderOrders: async () => {
+    const response = await api.get('/orders/provider');
+    return response.data;
+  },
+  updateStatus: async (id: string, status: string) => {
+    const response = await api.patch(`/orders/${id}/status`, { status });
+    return response.data;
   }
 };
 

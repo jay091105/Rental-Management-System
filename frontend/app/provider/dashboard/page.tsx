@@ -45,9 +45,7 @@ export default function ProviderDashboard() {
 
   const cards = [
     { title: 'My Products', value: stats.properties, icon: Package, color: 'text-green-600', bg: 'bg-green-50', link: '/provider/products' },
-    { title: 'Rental Requests', value: stats.rentals, icon: ClipboardList, color: 'text-purple-600', bg: 'bg-purple-50', link: '/admin/rentals' },
-  ];
-
+    { title: 'Rental Requests', value: stats.rentals, icon: ClipboardList, color: 'text-purple-600', bg: 'bg-purple-50', link: '/provider/orders' },
   return (
     <ProtectedRoute allowedRoles={['provider', 'admin']}>
       <div className="space-y-12">

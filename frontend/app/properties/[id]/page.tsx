@@ -440,14 +440,14 @@ export default function ProductDetailsPage() {
                         try {
                           const data = await orderService.create({ productId: product?._id, quantity: qty });
                           if (data?.success) {
-                            alert('Order requested successfully');
-                            window.location.href = '/orders';
+                            toast.success('Order requested successfully');
+                            router.push('/orders');
                           } else {
-                            alert(data?.message || 'Failed to create order');
+                            toast.error(data?.message || 'Failed to create order');
                           }
                         } catch (err: any) {
                           console.error(err);
-                          alert(err?.response?.data?.message || 'Failed to create order');
+                          toast.error(err?.response?.data?.message || 'Failed to create order');
                         }
                       }}
                       className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -460,14 +460,14 @@ export default function ProductDetailsPage() {
                         try {
                           const data = await quotationService.create({ productId: product?._id, quantity: qty });
                           if (data?.success) {
-                            alert('Quotation requested successfully');
-                            window.location.href = '/quotations';
+                            toast.success('Quotation requested successfully');
+                            router.push('/quotations');
                           } else {
-                            alert(data?.message || 'Failed to request quotation');
+                            toast.error(data?.message || 'Failed to request quotation');
                           }
                         } catch (err: any) {
                           console.error(err);
-                          alert(err?.response?.data?.message || 'Failed to request quotation');
+                          toast.error(err?.response?.data?.message || 'Failed to request quotation');
                         }
                       }}
                       className="bg-gray-900 text-white px-4 py-2 rounded"
