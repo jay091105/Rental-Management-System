@@ -1,8 +1,0 @@
-{
-  "name": "Test Vendor",
-  "email": "vendor@test.com",
-  "password": "Pass12345",
-  "role": "VENDOR",
-  "companyLogo": "https://logo.com",
-  "paymentQRCode": "https://qr.com"
-}
