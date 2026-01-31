@@ -23,8 +23,11 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['customer', 'manager', 'admin'],
-        default: 'customer'
+        enum: ['renter', 'provider', 'admin'],
+        default: 'renter',
+        enum: ['tenant', 'Owner'],
+        default: 'tenant'
+
     }
 }, {
     timestamps: true
@@ -33,7 +36,7 @@ const userSchema = new mongoose.Schema({
 // Encrypt password using bcrypt
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
-        next();
+       return next();
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

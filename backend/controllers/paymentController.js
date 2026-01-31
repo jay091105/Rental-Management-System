@@ -1,28 +1,28 @@
 const Payment = require('../models/Payment');
-const Booking = require('../models/Booking');
+const Rental = require('../models/Rental');
 
 // @desc    Process payment (mock)
 // @route   POST /api/payments
-// @access  Private (Tenant)
+// @access  Private (Renter)
 exports.processPayment = async (req, res, next) => {
     try {
-        const { bookingId, amount, transactionId } = req.body;
+        const { rentalId, amount, transactionId } = req.body;
 
-        const booking = await Booking.findById(bookingId);
+        const rental = await Rental.findById(rentalId);
 
-        if (!booking) {
-            return res.status(404).json({ success: false, message: 'Booking not found' });
+        if (!rental) {
+            return res.status(404).json({ success: false, message: 'Rental not found' });
         }
 
         const payment = await Payment.create({
-            booking: bookingId,
+            rental: rentalId,
             amount,
             transactionId,
             paymentStatus: 'completed'
         });
 
-        // Update booking status if payment is successful
-        await Booking.findByIdAndUpdate(bookingId, { status: 'confirmed' });
+        // Update rental status if payment is successful
+        await Rental.findByIdAndUpdate(rentalId, { status: 'confirmed' });
 
         res.status(201).json({ success: true, data: payment });
     } catch (err) {
@@ -30,12 +30,12 @@ exports.processPayment = async (req, res, next) => {
     }
 };
 
-// @desc    Get payment by booking ID
-// @route   GET /api/payments/booking/:bookingId
+// @desc    Get payment by rental ID
+// @route   GET /api/payments/rental/:rentalId
 // @access  Private
-exports.getPaymentByBooking = async (req, res, next) => {
+exports.getPaymentByRental = async (req, res, next) => {
     try {
-        const payment = await Payment.findOne({ booking: req.params.bookingId });
+        const payment = await Payment.findOne({ rental: req.params.rentalId });
 
         if (!payment) {
             return res.status(404).json({ success: false, message: 'Payment record not found' });

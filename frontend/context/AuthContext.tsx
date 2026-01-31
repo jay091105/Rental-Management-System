@@ -54,16 +54,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const redirectUser = (role: string) => {
-    let dashboardPath = '/properties';
+    let dashboardPath = '/products';
     switch (role) {
       case 'admin':
         dashboardPath = '/admin/dashboard';
         break;
-      case 'owner':
-        dashboardPath = '/owner/dashboard';
+      case 'provider':
+        dashboardPath = '/provider/dashboard';
         break;
-      case 'tenant':
-        dashboardPath = '/tenant/dashboard';
+      case 'renter':
+        dashboardPath = '/renter/dashboard';
         break;
     }
     console.log("[AUTH CONTEXT] Redirecting to:", dashboardPath);

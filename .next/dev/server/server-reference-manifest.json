@@ -1,0 +1,21 @@
+{
+  "node": {
+    "408955cefb703f1569b16dbda9dbe25f283ffa86c2": {
+      "workers": {
+        "app/register/page": {
+          "moduleId": "[project]/.next-internal/server/app/register/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/actions/register.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "register",
+          "filename": "src/app/actions/register.ts"
+        }
+      },
+      "layer": {
+        "app/register/page": "action-browser"
+      },
+      "filename": "src/app/actions/register.ts",
+      "exportedName": "register"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "VaFC7bICWBxoERXbIlPAwXPrqQTQDqnTjcI5EjzRc0M="
+}

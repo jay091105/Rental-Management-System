@@ -1,0 +1,110 @@
+[00:00:00.805] Server  WARN    ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:00.921] Server  LOG     ✓ Ready in 670ms
+[00:00:02.705] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:02.849] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:13.695] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:13.811] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:27.567] Server  LOG     prisma:query "SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`password`, `main`.`User`.`name`, `main`.`User`.`role`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?"
+[00:00:27.568] Server  LOG     prisma:query "SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`password`, `main`.`User`.`name`, `main`.`User`.`role`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?"
+[00:00:27.572] Server  ERROR   [auth][error] CredentialsSignin: Read more at https://errors.authjs.dev#credentialssignin
+[00:00:27.577] Server  ERROR       at Module.callback (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:4314:30)
+    at async AuthInternal (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:5148:24)
+    at async Auth (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:5370:34)
+    at async AppRouteRouteModule.do (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:37866)
+    at async AppRouteRouteModule.handle (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:45156)
+    at async responseGenerator (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17148:38)
+    at async AppRouteRouteModule.handleResponse (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:191938)
+    at async handleResponse (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17211:32)
+    at async Module.handler (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17264:13)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (D:\Rental management system\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\Rental management system\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:929:17)
+    at async D:\Rental management system\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (D:\Rental management system\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (D:\Rental management system\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (D:\Rental management system\node_modules\next\dist\server\lib\start-server.js:226:13)
+[00:00:27.599] Server  ERROR   [auth][error] CredentialsSignin: Read more at https://errors.authjs.dev#credentialssignin
+[00:00:27.601] Server  ERROR       at Module.callback (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:4314:30)
+    at async AuthInternal (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:5148:24)
+    at async Auth (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:5370:34)
+    at async AppRouteRouteModule.do (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:37866)
+    at async AppRouteRouteModule.handle (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:45156)
+    at async responseGenerator (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17148:38)
+    at async AppRouteRouteModule.handleResponse (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:191938)
+    at async handleResponse (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17211:32)
+    at async Module.handler (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17264:13)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (D:\Rental management system\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\Rental management system\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:929:17)
+    at async D:\Rental management system\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (D:\Rental management system\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (D:\Rental management system\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (D:\Rental management system\node_modules\next\dist\server\lib\start-server.js:226:13)
+[00:00:27.678] Server  LOG     prisma:query "SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`password`, `main`.`User`.`name`, `main`.`User`.`role`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?"
+[00:00:27.680] Server  ERROR   [auth][error] CredentialsSignin: Read more at https://errors.authjs.dev#credentialssignin
+[00:00:27.682] Server  ERROR       at Module.callback (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:4314:30)
+    at async AuthInternal (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:5148:24)
+    at async Auth (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:5370:34)
+    at async AppRouteRouteModule.do (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:37866)
+    at async AppRouteRouteModule.handle (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:45156)
+    at async responseGenerator (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17148:38)
+    at async AppRouteRouteModule.handleResponse (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:191938)
+    at async handleResponse (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17211:32)
+    at async Module.handler (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17264:13)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (D:\Rental management system\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\Rental management system\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:929:17)
+    at async D:\Rental management system\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (D:\Rental management system\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (D:\Rental management system\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (D:\Rental management system\node_modules\next\dist\server\lib\start-server.js:226:13)
+[00:00:54.632] Server  LOG     prisma:query "SELECT 1"
+[00:00:54.651] Server  LOG     prisma:query "SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`password`, `main`.`User`.`name`, `main`.`User`.`role`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?"
+[00:00:54.662] Server  ERROR   [auth][error] CredentialsSignin: Read more at https://errors.authjs.dev#credentialssignin
+[00:00:54.673] Server  ERROR       at Module.callback (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:4314:30)
+    at async AuthInternal (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:5148:24)
+    at async Auth (D:\Rental management system\.next\dev\server\chunks\node_modules_@auth_core_36df0127._.js:5370:34)
+    at async AppRouteRouteModule.do (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:37866)
+    at async AppRouteRouteModule.handle (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:45156)
+    at async responseGenerator (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17148:38)
+    at async AppRouteRouteModule.handleResponse (D:\Rental management system\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:191938)
+    at async handleResponse (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17211:32)
+    at async Module.handler (D:\Rental management system\.next\dev\server\chunks\node_modules_next_c0d7f167._.js:17264:13)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (D:\Rental management system\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\Rental management system\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (D:\Rental management system\node_modules\next\dist\server\base-server.js:929:17)
+    at async D:\Rental management system\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (D:\Rental management system\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (D:\Rental management system\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (D:\Rental management system\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (D:\Rental management system\node_modules\next\dist\server\lib\start-server.js:226:13)
+[00:00:59.675] Server  LOG     ○ Compiling /register ...
+[00:01:17.393] Server  LOG     prisma:query "SELECT 1"
+[00:01:17.460] Server  LOG     prisma:query "INSERT INTO `main`.`User` (`id`, `email`, `password`, `name`, `role`, `createdAt`, `updatedAt`) VALUES (?,?,?,?,?,?,?) RETURNING `id` AS `id`, `email` AS `email`, `password` AS `password`, `name` AS `name`, `role` AS `role`, `createdAt` AS `createdAt`, `updatedAt` AS `updatedAt`"
+[00:01:22.704] Server  LOG     prisma:query "SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`password`, `main`.`User`.`name`, `main`.`User`.`role`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?"
+[00:01:25.662] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:28.288] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:31.840] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold

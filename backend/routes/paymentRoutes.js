@@ -1,7 +1,7 @@
 const express = require('express');
 const {
     processPayment,
-    getPaymentByBooking
+    getPaymentByRental
 } = require('../controllers/paymentController');
 
 const { protect } = require('../middleware/auth');
@@ -9,6 +9,6 @@ const { protect } = require('../middleware/auth');
 const router = express.Router();
 
 router.post('/', protect, processPayment);
-router.get('/booking/:bookingId', protect, getPaymentByBooking);
+router.get('/rental/:rentalId', protect, getPaymentByRental);
 
 module.exports = router;

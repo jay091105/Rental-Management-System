@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
-import { Home, LogOut, User as UserIcon } from 'lucide-react';
+import { Package, LogOut, User as UserIcon } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -13,32 +13,32 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center space-x-2 text-blue-600 font-bold text-xl">
-            <Home className="w-6 h-6" />
+            <Package className="w-6 h-6" />
             <span>Rentals</span>
           </Link>
 
           <div className="flex items-center space-x-6">
-            <Link href="/properties" className="text-gray-600 hover:text-blue-600 transition">
-              Properties
+            <Link href="/products" className="text-gray-600 hover:text-blue-600 transition">
+              Products
             </Link>
 
             {isAuthenticated ? (
               <>
-                <Link href="/bookings" className="text-gray-600 hover:text-blue-600 transition">
-                  My Bookings
+                <Link href="/rentals" className="text-gray-600 hover:text-blue-600 transition">
+                  My Rentals
                 </Link>
                 {user?.role === 'admin' && (
                   <Link href="/admin/dashboard" className="text-gray-600 hover:text-blue-600 transition">
                     Dashboard
                   </Link>
                 )}
-                {user?.role === 'owner' && (
-                  <Link href="/owner/dashboard" className="text-gray-600 hover:text-blue-600 transition">
+                {user?.role === 'provider' && (
+                  <Link href="/provider/dashboard" className="text-gray-600 hover:text-blue-600 transition">
                     Dashboard
                   </Link>
                 )}
-                {user?.role === 'tenant' && (
-                  <Link href="/tenant/dashboard" className="text-gray-600 hover:text-blue-600 transition">
+                {user?.role === 'renter' && (
+                  <Link href="/renter/dashboard" className="text-gray-600 hover:text-blue-600 transition">
                     Dashboard
                   </Link>
                 )}

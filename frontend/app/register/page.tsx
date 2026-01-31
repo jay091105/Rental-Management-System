@@ -9,8 +9,8 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
-    role: 'tenant',
+    role: 'renter',
+    password: ''
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,12 +31,11 @@ export default function RegisterPage() {
     console.log("[REGISTER] Payload:", { 
       name: formData.name, 
       email: formData.email, 
-      role: formData.role,
       password: '***' 
     });
 
     // Client-side validation
-    if (!formData.name || !formData.email || !formData.password || !formData.role) {
+    if (!formData.name || !formData.email || !formData.password) {
       console.log("[REGISTER] Validation failed: Missing fields");
       setError('All fields are required');
       return;
@@ -159,8 +158,8 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
               >
-                <option value="tenant">Tenant</option>
-                <option value="owner">Property Owner</option>
+                <option value="renter">Renter</option>
+                <option value="provider">Item Provider</option>
               </select>
             </div>
           </div>

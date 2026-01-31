@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { propertyService, bookingService, userService } from '@/services/api';
+import { productService, rentalService, userService } from '@/services/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
-import { LayoutDashboard, Users, Building, ClipboardList, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Users, Package, ClipboardList, ArrowRight } from 'lucide-react';
 
 export default function AdminDashboard() {
   useEffect(() => {
@@ -14,23 +14,23 @@ export default function AdminDashboard() {
 
   const [stats, setStats] = useState({
     users: 0,
-    properties: 0,
-    bookings: 0,
+    products: 0,
+    rentals: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [users, properties, bookings] = await Promise.all([
+        const [users, products, rentals] = await Promise.all([
           userService.getAll(),
-          propertyService.getAll(),
-          bookingService.getAll(),
+          productService.getAll(),
+          rentalService.getAll(),
         ]);
         setStats({
           users: users.length,
-          properties: properties.length,
-          bookings: bookings.length,
+          products: products.length,
+          rentals: rentals.length,
         });
       } catch (err) {
         console.error('Failed to fetch admin data:', err);
@@ -45,8 +45,8 @@ export default function AdminDashboard() {
 
   const cards = [
     { title: 'Total Users', value: stats.users, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', link: '/admin/users' },
-    { title: 'Total Properties', value: stats.properties, icon: Building, color: 'text-green-600', bg: 'bg-green-50', link: '/properties' },
-    { title: 'Total Bookings', value: stats.bookings, icon: ClipboardList, color: 'text-purple-600', bg: 'bg-purple-50', link: '/admin/bookings' },
+    { title: 'Total Products', value: stats.products, icon: Package, color: 'text-green-600', bg: 'bg-green-50', link: '/products' },
+    { title: 'Total Rentals', value: stats.rentals, icon: ClipboardList, color: 'text-purple-600', bg: 'bg-purple-50', link: '/admin/rentals' },
   ];
 
   return (

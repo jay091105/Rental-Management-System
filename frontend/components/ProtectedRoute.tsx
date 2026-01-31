@@ -7,7 +7,7 @@ import Loading from './Loading';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  allowedRoles?: ('admin' | 'owner' | 'tenant')[];
+  allowedRoles?: ('admin' | 'provider' | 'renter')[];
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {

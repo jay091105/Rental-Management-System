@@ -8,14 +8,14 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Rental MS</h3>
             <p className="text-gray-400">
-              The easiest way to find and manage rental properties.
+              The easiest way to find and manage rentals.
             </p>
           </div>
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-gray-400">
-              <li><Link href="/properties" className="hover:text-white transition">All Properties</Link></li>
-              <li><Link href="/bookings" className="hover:text-white transition">My Bookings</Link></li>
+              <li><Link href="/products" className="hover:text-white transition">All Products</Link></li>
+              <li><Link href="/rentals" className="hover:text-white transition">My Rentals</Link></li>
             </ul>
           </div>
           <div>

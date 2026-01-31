@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rental Management System",
-  description: "Easiest way to find and manage rental properties",
+  title: "Rental Marketplace",
+  description: "Easiest way to find and manage rental products and services",
 };
 
 export default function RootLayout({

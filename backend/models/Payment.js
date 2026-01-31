@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-    booking: {
+    rental: {
         type: mongoose.Schema.ObjectId,
-        ref: 'Booking',
+        ref: 'Rental',
         required: true
     },
     amount: {
