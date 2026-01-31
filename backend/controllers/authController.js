@@ -6,18 +6,48 @@ const jwt = require('jsonwebtoken');
 // @access  Public
 exports.register = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
+
+        // Basic validation
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: 'Name, email and password are required', code: 'INVALID_INPUT' });
+        }
+
+        const emailRe = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if (!emailRe.test(email)) {
+            return res.status(400).json({ success: false, message: 'Invalid email address', code: 'INVALID_INPUT' });
+        }
+
+        if (password.length < 8) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 8 characters', code: 'INVALID_INPUT' });
+        }
+
+        const allowedRoles = ['renter', 'provider'];
+        const assignedRole = role ? role : 'renter';
+        if (!allowedRoles.includes(assignedRole)) {
+            return res.status(400).json({ success: false, message: 'Invalid role provided', code: 'INVALID_INPUT' });
+        }
 
         // Create user
         const user = await User.create({
             name,
             email,
             password,
-            role: 'tenant'
+            role: assignedRole
         });
 
         sendTokenResponse(user, 201, res);
     } catch (err) {
+        // Handle duplicate key (email) error
+        if (err && err.code === 11000) {
+            return res.status(409).json({ success: false, message: 'Email already exists', code: 'EMAIL_EXISTS' });
+        }
+
+        // Mongoose validation error
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({ success: false, message: err.message, code: 'INVALID_INPUT' });
+        }
+
         res.status(400).json({ success: false, message: err.message });
     }
 };
@@ -31,7 +61,7 @@ exports.login = async (req, res, next) => {
 
         // Validate email & password
         if (!email || !password) {
-            return res.status(400).json({ success: false, message: 'Please provide an email and password' });
+            return res.status(400).json({ success: false, message: 'Please provide an email and password', code: 'INVALID_INPUT' });
         }
 
         // Check for user
@@ -39,7 +69,7 @@ exports.login = async (req, res, next) => {
 
         if (!user) {
             console.log(`[AUTH DEBUG] User not found: ${email}`);
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+            return res.status(401).json({ success: false, message: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
         }
 
         // Check if password matches
@@ -48,7 +78,7 @@ exports.login = async (req, res, next) => {
 
         if (!isMatch) {
             console.log(`[AUTH DEBUG] Password mismatch for: ${email}`);
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+            return res.status(401).json({ success: false, message: 'Invalid credentials', code: 'INVALID_CREDENTIALS' });
         }
 
         sendTokenResponse(user, 200, res);

@@ -26,6 +26,11 @@ exports.protect = async (req, res, next) => {
 
         next();
     } catch (err) {
+        // Handle expired token specifically
+        if (err && err.name === 'TokenExpiredError') {
+            return res.status(401).json({ success: false, message: 'Token expired', code: 'TOKEN_EXPIRED' });
+        }
+
         return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
     }
 };

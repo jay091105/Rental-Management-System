@@ -53,6 +53,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuth();
   }, []);
 
+  // Listen for logout broadcasts (other tabs)
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'logout') {
+        setUser(null);
+        router.push('/login');
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorage);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorage);
+      }
+    };
+  }, [router]);
   const redirectUser = (role: string) => {
     let dashboardPath = '/properties';
     switch (role) {

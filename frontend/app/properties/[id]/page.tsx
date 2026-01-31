@@ -409,6 +409,64 @@ export default function PropertyDetailsPage() {
               </div>
 
               {isAuthenticated && (
+                <>
+                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-6">
+                  <h4 className="text-lg font-bold mb-3">Request Order / Quote</h4>
+                  <div className="flex gap-3 items-center">
+                    <input type="number" min={1} defaultValue={1} id="orderQty" className="w-28 p-2 border rounded" />
+                    <button
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        const qtyInput = document.getElementById('orderQty') as HTMLInputElement;
+                        const qty = Number(qtyInput?.value || 1);
+                        try {
+                          const res = await fetch('/api/orders', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productId: property._id, quantity: qty })
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            alert('Order requested successfully');
+                            window.location.href = '/orders';
+                          } else {
+                            alert(data.message || 'Failed to create order');
+                          }
+                        } catch (err) {
+                          console.error(err);
+                          alert('Failed to create order');
+                        }
+                      }}
+                      className="bg-blue-600 text-white px-4 py-2 rounded"
+                    >Request Order</button>
+                    <button
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        const qtyInput = document.getElementById('orderQty') as HTMLInputElement;
+                        const qty = Number(qtyInput?.value || 1);
+                        try {
+                          const res = await fetch('/api/quotations', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productId: property._id, quantity: qty })
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            alert('Quotation requested successfully');
+                            window.location.href = '/quotations';
+                          } else {
+                            alert(data.message || 'Failed to request quotation');
+                          }
+                        } catch (err) {
+                          console.error(err);
+                          alert('Failed to request quotation');
+                        }
+                      }}
+                      className="bg-gray-900 text-white px-4 py-2 rounded"
+                    >Request Quote</button>
+                  </div>
+                </div>
+
                 <form
                   onSubmit={handleReviewSubmit}
                   className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm mb-12"
@@ -443,6 +501,7 @@ export default function PropertyDetailsPage() {
                     {reviewLoading ? 'Posting...' : 'Post Review'}
                   </button>
                 </form>
+                </>
               )}
 
               <div className="space-y-8">

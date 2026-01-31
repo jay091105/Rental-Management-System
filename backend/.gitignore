@@ -1,0 +1,26 @@
+# Node modules
+/node_modules
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Build
+/dist
+/build
+
+# Logs
+npm-debug.log*
+pm-error.log*
+
+# Coverage
+coverage
+
+# Misc
+.DS_Store
+*.pem
+
+# IDEs
+.vscode
+.idea

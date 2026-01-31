@@ -19,13 +19,18 @@ const rentalSchema = new mongoose.Schema({
         type: Date,
         required: [true, 'Please add an end date']
     },
+    quantity: {
+        type: Number,
+        default: 1,
+        min: [1, 'Quantity must be at least 1']
+    },
     totalCost: {
         type: Number,
         required: true
     },
     rentalStatus: {
         type: String,
-        enum: ['pending', 'approved', 'active', 'completed', 'cancelled'],
+        enum: ['pending', 'approved', 'confirmed', 'rejected', 'active', 'completed', 'cancelled'],
         default: 'pending'
     }
 }, {

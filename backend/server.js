@@ -23,6 +23,10 @@ const productRoutes = require('./routes/productRoutes');
 const rentalRoutes = require('./routes/rentalRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const providerRoutes = require('./routes/providerRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
+const quotationRoutes = require('./routes/quotationRoutes');
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -30,15 +34,14 @@ app.use('/api/products', productRoutes);
 app.use('/api/rentals', rentalRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/provider', providerRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/quotations', quotationRoutes);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    error: err.message || 'Server Error'
-  });
-});
+const errorHandler = require('./middleware/errorHandler');
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

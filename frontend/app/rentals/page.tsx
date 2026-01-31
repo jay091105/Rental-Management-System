@@ -44,13 +44,13 @@ export default function RentalsPage() {
         {rentals.length === 0 ? (
           <div className="text-center py-20 bg-gray-50 rounded-xl border border-gray-200">
             <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">You haven&apos;t made any rentals yet.</p>
+            <p className="text-gray-500 text-lg">You have not made any rentals yet.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {rentals.map((rental) => (
               <div
-                key={rental.id}
+                key={rental.id ?? rental._id}
                 className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6"
               >
                 <div className="flex items-center gap-6 w-full">
@@ -80,6 +80,31 @@ export default function RentalsPage() {
                     {getStatusIcon(rental.status)}
                     <span className="capitalize font-medium text-gray-700">{rental.status}</span>
                   </div>
+
+                  {rental.status === 'approved' && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          // initiate payment and simulate success for now
+                          const rentalId = rental.id ?? rental._id;
+                          const res = await (await import('@/services/api')).paymentService.process(rentalId);
+                          const paymentId = res.data._id || res.data.id || res.data._id;
+                          if (paymentId) {
+                            await (await import('@/services/api')).paymentService.mock(paymentId, 'success');
+                            // refresh
+                            const data = await (await import('@/services/api')).rentalService.getMyRentals();
+                            setRentals(data);
+                          }
+                        } catch (err) {
+                          console.error('Payment failed', err);
+                          alert('Payment failed');
+                        }
+                      }}
+                      className="ml-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition"
+                    >
+                      Pay Now
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

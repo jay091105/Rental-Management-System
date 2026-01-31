@@ -30,6 +30,9 @@ export interface Property {
   deposit: number;
 }
 
+// Alias for incremental rename: Product is equivalent to Property for now
+export type Product = Property;
+
 export interface Review {
   _id: string;
   product: string;
@@ -44,12 +47,16 @@ export interface Review {
 
 export interface Rental {
   id: string;
+  _id?: string; // support backend _id as well as id
   productId: string;
   renterId: string;
   startDate: string;
   endDate: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  quantity?: number;
+  status: 'pending' | 'approved' | 'confirmed' | 'rejected' | 'active' | 'completed' | 'cancelled';
   totalPrice: number;
+  payment?: string | null;
+  paymentRequired?: boolean;
   product?: Property;
   renter?: User;
 }

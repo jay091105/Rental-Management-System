@@ -12,8 +12,9 @@ export const authService = {
       });
       console.log('[AUTH SERVICE] Login response successful');
       return response.data;
-    } catch (error: any) {
-      console.log('[AUTH SERVICE] Login error status:', error.response?.status);
+    } catch (error: unknown) {
+      // preserve original behavior but avoid `any`
+      console.log('[AUTH SERVICE] Login error status:', (error as any)?.response?.status);
       throw error;
     }
   },
@@ -23,8 +24,8 @@ export const authService = {
       const response = await axiosInstance.post<AuthResponse>('/auth/register', userData);
       console.log('[AUTH SERVICE] Register response successful');
       return response.data;
-    } catch (error: any) {
-      console.log('[AUTH SERVICE] Register error status:', error.response?.status);
+    } catch (error: unknown) {
+      console.log('[AUTH SERVICE] Register error status:', (error as any)?.response?.status);
       throw error;
     }
   },

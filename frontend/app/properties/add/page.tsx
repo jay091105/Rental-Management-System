@@ -11,8 +11,17 @@ export default function AddPropertyPage() {
     description: '',
     location: '',
     price: 0,
-    category: 'Other',
+    pricePerHour: 0,
+    pricePerDay: 0,
+    pricePerMonth: 0,
+    availableUnits: 1,
+    deliveryCharges: 0,
+    deposit: 0,
+    brandName: '',
+    colour: '',
     imageURL: '',
+    photosCSV: '' /* comma-separated image URLs */,
+    category: 'Other',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -24,10 +33,28 @@ export default function AddPropertyPage() {
     setIsSubmitting(true);
 
     try {
+      // Basic client validation: required fields and at least one pricing field
+      if (!formData.title || !formData.description || !formData.location) {
+        setError('Please fill title, description and location');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!formData.price && !formData.pricePerDay && !formData.pricePerHour && !formData.pricePerMonth) {
+        setError('Please set at least one pricing field (pricePerHour/pricePerDay/pricePerMonth/price)');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const images = formData.photosCSV
+        ? formData.photosCSV.split(',').map(i => i.trim()).filter(Boolean)
+        : formData.imageURL ? [formData.imageURL] : [];
+
       const dataToSubmit = {
         ...formData,
-        images: formData.imageURL ? [formData.imageURL] : []
+        images,
       };
+
       await propertyService.create(dataToSubmit);
       router.push('/properties');
     } catch (err: unknown) {
@@ -128,16 +155,115 @@ export default function AddPropertyPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rent Amount ($/day)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Other Image URLs (comma separated)</label>
             <input
-              type="number"
-              name="price"
-              required
-              min="0"
-              value={formData.price}
+              type="text"
+              name="photosCSV"
+              value={formData.photosCSV}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="https://a.jpg, https://b.jpg"
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rent Amount ($/hour)</label>
+              <input
+                type="number"
+                name="pricePerHour"
+                min="0"
+                value={formData.pricePerHour}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rent Amount ($/day)</label>
+              <input
+                type="number"
+                name="pricePerDay"
+                min="0"
+                value={formData.pricePerDay}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rent Amount ($/month)</label>
+              <input
+                type="number"
+                name="pricePerMonth"
+                min="0"
+                value={formData.pricePerMonth}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Available Units</label>
+              <input
+                type="number"
+                name="availableUnits"
+                min="0"
+                value={formData.availableUnits}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Deposit</label>
+              <input
+                type="number"
+                name="deposit"
+                min="0"
+                value={formData.deposit}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Charges</label>
+              <input
+                type="number"
+                name="deliveryCharges"
+                min="0"
+                value={formData.deliveryCharges}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+              <input
+                type="text"
+                name="brandName"
+                value={formData.brandName}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Colour</label>
+              <input
+                type="text"
+                name="colour"
+                value={formData.colour}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
           </div>
 
           <button

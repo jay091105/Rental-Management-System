@@ -102,6 +102,21 @@ exports.createProduct = async (req, res, next) => {
         // Add user to req.body
         req.body.owner = req.user.id;
 
+        // Basic validation
+        const { title, description, category, location } = req.body;
+        if (!title || !description || !category || !location) {
+            return res.status(400).json({ success: false, message: 'Missing required fields: title, description, category, location' });
+        }
+
+        // Ensure at least one pricing field exists
+        if (!req.body.price && !req.body.pricePerDay && !req.body.pricePerHour && !req.body.pricePerMonth) {
+            return res.status(400).json({ success: false, message: 'At least one pricing field (pricePerHour/pricePerDay/pricePerMonth/price) is required' });
+        }
+
+        if (req.body.availableUnits && Number(req.body.availableUnits) < 0) {
+            return res.status(400).json({ success: false, message: 'availableUnits cannot be negative' });
+        }
+
         const product = await Product.create(req.body);
         res.status(201).json({ success: true, data: product });
     } catch (err) {
@@ -125,6 +140,10 @@ exports.updateProduct = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'Not authorized to update this product' });
         }
 
+        if (req.body.availableUnits && Number(req.body.availableUnits) < 0) {
+            return res.status(400).json({ success: false, message: 'availableUnits cannot be negative' });
+        }
+
         product = await Product.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
@@ -141,15 +160,16 @@ exports.updateProduct = async (req, res, next) => {
 // @access  Private (Owner/Admin)
 exports.deleteProduct = async (req, res, next) => {
     try {
-        const product = await Product.findById(req.params.id);
+        // If the ownership middleware attached the resource, reuse it
+        const product = req.resource || await Product.findById(req.params.id);
 
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
-        // Make sure user is product owner
-        if (product.owner.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({ success: false, message: 'Not authorized to delete this product' });
+        // Extra safety: make sure user is product owner
+        if (product.owner && product.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Not authorized to delete this product' });
         }
 
         await product.deleteOne();

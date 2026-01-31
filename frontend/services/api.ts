@@ -10,6 +10,7 @@ export const propertyService = {
     const response = await api.get<{ data: Property }>(`/products/${id}`);
     return response.data.data;
   },
+  // ... other methods
   create: async (data: Partial<Property>) => {
     const response = await api.post<{ data: Property }>('/products', data);
     return response.data.data;
@@ -47,6 +48,40 @@ export const userService = {
     const response = await api.get<User[]>('/users');
     return response.data;
   },
+};
+
+export const paymentService = {
+  process: async (rentalId: string) => {
+    const response = await api.post('/payments', { rentalId });
+    return response.data;
+  },
+  processForInvoice: async (invoiceId: string) => {
+    const response = await api.post('/payments', { invoiceId });
+    return response.data;
+  },
+  processForOrder: async (orderId: string) => {
+    const response = await api.post('/payments', { orderId });
+    return response.data;
+  },
+  mock: async (paymentId: string, outcome: 'success' | 'failure') => {
+    const response = await api.post(`/payments/${paymentId}/mock`, { outcome });
+    return response.data;
+  },
+  getByRental: async (rentalId: string) => {
+    const response = await api.get(`/payments/rental/${rentalId}`);
+    return response.data;
+  }
+};
+
+export const providerService = {
+  getProperties: async () => {
+    const response = await api.get('/provider/properties');
+    return response.data.data;
+  },
+  getRentals: async () => {
+    const response = await api.get('/provider/rentals');
+    return response.data;
+  }
 };
 
 export const reviewService = {

@@ -23,16 +23,14 @@ export default function ProviderDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // In a real app, these would be filtered by providerId on the backend
-        const [properties, rentals] = await Promise.all([
-          propertyService.getAll(),
-          rentalService.getAll(),
+        const [properties, rentalsResp] = await Promise.all([
+          (await import('@/services/api')).providerService.getProperties(),
+          (await import('@/services/api')).providerService.getRentals(),
         ]);
-        
-        // Simulating filtering for demonstration
+
         setStats({
           properties: properties.length,
-          rentals: rentals.length,
+          rentals: rentalsResp.count || rentalsResp.data.length || 0,
         });
       } catch (err) {
         console.error('Failed to fetch provider data:', err);

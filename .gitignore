@@ -1,1 +1,32 @@
+# Node modules
 node_modules
+
+# Environment files
+.env
+.env.local
+.env.*
+
+# Build & runtime
+/.next
+/dist
+/build
+
+# Logs
+npm-debug.log*
+Yarn-debug.log*
+yarn-error.log*
+
+# System
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode
+.idea
+
+# Coverage
+coverage
+
+# Misc
+*.pem
+

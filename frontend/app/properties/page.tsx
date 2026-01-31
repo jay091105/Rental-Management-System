@@ -62,7 +62,7 @@ export default function PropertiesPage() {
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Available Properties</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Available Items</h1>
             <p className="text-gray-500">Find exactly what you need from our curated catalog.</p>
           </div>
           
@@ -83,7 +83,7 @@ export default function PropertiesPage() {
                 className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-md whitespace-nowrap"
               >
                 <Plus className="w-5 h-5" />
-                Add Property
+                Add Item
               </Link>
             )}
           </div>
@@ -109,14 +109,14 @@ export default function PropertiesPage() {
         {filteredProperties.length === 0 ? (
           <div className="text-center py-24 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">No properties found matching your search.</p>
+            <p className="text-gray-500 text-lg">No items found matching your search.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProperties.map((property) => (
+            {filteredProperties.map((property, idx) => (
               <Link
-                key={property.id}
-                href={`/properties/${property.id}`}
+                key={property._id ?? property.id ?? idx}
+                href={`/properties/${property._id ?? property.id ?? ''}`}
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full"
               >
                 <div className="h-56 bg-gray-100 relative overflow-hidden">

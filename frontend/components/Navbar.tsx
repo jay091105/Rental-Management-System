@@ -29,7 +29,15 @@ const Navbar = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
             <Link href="/properties" className="text-gray-600 hover:text-blue-600 font-medium transition">
-              Properties
+              Products
+            </Link>
+
+            <Link href="/orders" className="text-gray-600 hover:text-blue-600 font-medium transition">
+              Orders
+            </Link>
+
+            <Link href="/invoices" className="text-gray-600 hover:text-blue-600 font-medium transition">
+              Invoices
             </Link>
 
             {isAuthenticated ? (
@@ -96,7 +104,13 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-100 space-y-2 bg-white">
             <Link href="/properties" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
-              Properties
+              Products
+            </Link>
+            <Link href="/orders" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
+              Orders
+            </Link>
+            <Link href="/invoices" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
+              Invoices
             </Link>
             {isAuthenticated ? (
               <>

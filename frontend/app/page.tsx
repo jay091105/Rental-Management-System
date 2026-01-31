@@ -7,19 +7,7 @@ import {
   Search,
   ShoppingCart,
   Star,
-  Filter,
   X,
-  Clock,
-  ShieldCheck,
-  Package,
-  Car,
-  Home as HomeIcon,
-  Hammer,
-  Laptop,
-  PartyPopper,
-  Sofa,
-  Shirt,
-  Trophy,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -63,8 +51,6 @@ export default function Home() {
   ]);
   const [brands, setBrands] = useState<string[]>([]);
   const [colours, setColours] = useState<string[]>([]);
-  const [cart, setCart] = useState<Property[]>([]);
-
   // Redirect based on user role
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
@@ -120,7 +106,6 @@ export default function Home() {
       toast.error('Please log in to add items to your cart.');
       return;
     }
-    setCart((prev) => [...prev, property]);
     toast.success(`${property.name} added to cart`);
   };
 

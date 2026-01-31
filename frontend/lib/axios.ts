@@ -27,9 +27,25 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
+        // Clear auth and redirect to login. If token expired, add query flag for UI notice
         localStorage.removeItem('token');
-        // Optional: redirect to login if not already there
-        // window.location.href = '/login';
+        localStorage.removeItem('user');
+
+        const params = new URLSearchParams();
+        if (error.response.data && error.response.data.code === 'TOKEN_EXPIRED') {
+          params.set('expired', '1');
+        }
+
+        // Broadcast logout to other tabs
+        try {
+          localStorage.setItem('logout', Date.now().toString());
+        } catch (e) {
+          // ignore
+        }
+
+        const query = params.toString();
+        const loginUrl = '/login' + (query ? `?${query}` : '');
+        window.location.href = loginUrl;
       }
     }
     return Promise.reject(error);

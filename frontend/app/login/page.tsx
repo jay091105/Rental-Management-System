@@ -4,19 +4,31 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Alert from '@/components/Alert';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [alertType, setAlertType] = useState<'error'|'success'|'info'>('error');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { login, isAuthenticated, loading, user, redirectUser } = useAuth();
-  const router = useRouter();
 
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
       redirectUser(user.role);
+    }
+
+    // If redirected because session expired, show message
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('expired') === '1') {
+        setError('Your session has expired. Please login again.');
+        setAlertType('info');
+      }
+    } catch (e) {
+      // ignore (SSR)
     }
   }, [isAuthenticated, loading, user, redirectUser]);
 
@@ -68,8 +80,8 @@ export default function LoginPage() {
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         {error && (
-          <div className="mb-4 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded text-center">
-            {error}
+          <div className="mb-4">
+            <Alert message={error} onClose={() => { setError(''); setAlertType('error'); }} type={alertType} />
           </div>
         )}
         

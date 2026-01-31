@@ -10,11 +10,29 @@ const productSchema = new mongoose.Schema({
     description: {
         type: String,
         required: [true, 'Please add a description'],
-        maxlength: [500, 'Description cannot be more than 500 characters']
+        maxlength: [1000, 'Description cannot be more than 1000 characters']
     },
+    // Legacy price (kept for backward compatibility)
     price: {
         type: Number,
-        required: [true, 'Please add a price']
+        min: [0, 'Price cannot be negative'],
+        default: null
+    },
+    // Preferred pricing fields
+    pricePerHour: {
+        type: Number,
+        min: [0, 'pricePerHour cannot be negative'],
+        default: null
+    },
+    pricePerDay: {
+        type: Number,
+        min: [0, 'pricePerDay cannot be negative'],
+        default: null
+    },
+    pricePerMonth: {
+        type: Number,
+        min: [0, 'pricePerMonth cannot be negative'],
+        default: null
     },
     category: {
         type: String,
@@ -38,6 +56,35 @@ const productSchema = new mongoose.Schema({
     images: {
         type: [String],
         default: []
+    },
+    photos: {
+        type: [String],
+        default: []
+    },
+    brandName: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    colour: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    availableUnits: {
+        type: Number,
+        default: 1,
+        min: [0, 'availableUnits cannot be negative']
+    },
+    deliveryCharges: {
+        type: Number,
+        default: 0,
+        min: [0, 'deliveryCharges cannot be negative']
+    },
+    deposit: {
+        type: Number,
+        default: 0,
+        min: [0, 'deposit cannot be negative']
     },
     status: {
         type: String,

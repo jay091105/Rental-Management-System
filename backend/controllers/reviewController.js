@@ -1,16 +1,32 @@
 const Review = require('../models/Review');
 const Product = require('../models/Product');
 
-// @desc    Add a review
+// @desc    Add a review (only after completed rental)
 // @route   POST /api/reviews
 // @access  Private
 exports.addReview = async (req, res, next) => {
     try {
         const { productId, rating, comment } = req.body;
 
+        if (!productId || !rating || !comment) {
+            return res.status(400).json({ success: false, message: 'productId, rating and comment are required' });
+        }
+
+        // Ensure user has a completed rental for this product
+        const completedRental = await require('../models/Rental').findOne({ product: productId, user: req.user.id, rentalStatus: 'completed' });
+        if (!completedRental) {
+            return res.status(403).json({ success: false, message: 'You can only review a product after completing a rental' });
+        }
+
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
+        // Prevent duplicate review by the same user for the same product
+        const existing = await Review.findOne({ product: productId, user: req.user.id });
+        if (existing) {
+            return res.status(400).json({ success: false, message: 'You have already reviewed this product' });
         }
 
         const review = await Review.create({
@@ -21,17 +37,21 @@ exports.addReview = async (req, res, next) => {
         });
 
         // Update average rating and num of reviews
-        const reviews = await Review.find({ product: productId });
-        const numOfReviews = reviews.length;
-        const averageRating = reviews.reduce((acc, item) => item.rating + acc, 0) / numOfReviews;
+        const stats = await Review.aggregate([
+            { $match: { product: require('mongoose').Types.ObjectId(productId) } },
+            { $group: { _id: '$product', avgRating: { $avg: '$rating' }, count: { $sum: 1 } } }
+        ]);
+
+        const agg = stats[0] || { avgRating: 0, count: 0 };
 
         await Product.findByIdAndUpdate(productId, {
-            averageRating,
-            numOfReviews
+            averageRating: agg.avgRating || 0,
+            numOfReviews: agg.count || 0
         });
 
         res.status(201).json({ success: true, data: review });
     } catch (err) {
+        if (err.code === 11000) return res.status(400).json({ success: false, message: 'Duplicate review' });
         res.status(400).json({ success: false, message: err.message });
     }
 };
