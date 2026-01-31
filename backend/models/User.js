@@ -23,11 +23,13 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
+
         enum: ['renter', 'provider', 'admin'],
         default: 'renter',
         enum: ['tenant', 'Owner'],
+        default: 'tenant',
+        enum: ['tenant', 'Owner'],
         default: 'tenant'
-
     }
 }, {
     timestamps: true
