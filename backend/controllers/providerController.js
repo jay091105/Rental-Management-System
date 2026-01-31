@@ -1,10 +1,11 @@
 const Product = require('../models/Product');
 const Rental = require('../models/Rental');
 
-exports.getProperties = async (req, res, next) => {
+exports.getProducts = async (req, res, next) => {
   try {
-    const properties = await Product.find({ owner: req.user.id }).sort('-createdAt');
-    res.status(200).json({ success: true, count: properties.length, data: properties });
+    const products = await Product.find({ owner: req.user.id }).sort('-createdAt');
+    try { console.debug(`[providerController] provider ${req.user.id} has ${products.length} products`); } catch(e) {}
+    res.status(200).json({ success: true, count: products.length, data: products });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }

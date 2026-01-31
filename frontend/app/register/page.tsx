@@ -4,19 +4,20 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Alert from '@/components/Alert';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'renter',
-    password: ''
+    password: '',
+    confirmPassword: '',
+    role: 'renter'
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { register, isAuthenticated, loading, user, redirectUser } = useAuth();
-  const router = useRouter();
 
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
@@ -31,19 +32,39 @@ export default function RegisterPage() {
     console.log("[REGISTER] Payload:", { 
       name: formData.name, 
       email: formData.email, 
+      role: formData.role,
       password: '***' 
     });
 
     // Client-side validation
-    if (!formData.name || !formData.email || !formData.password) {
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       console.log("[REGISTER] Validation failed: Missing fields");
       setError('All fields are required');
       return;
     }
 
-    if (formData.password.length < 6) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      console.log("[REGISTER] Validation failed: Invalid email");
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (formData.password.length < 8) {
       console.log("[REGISTER] Validation failed: Password too short");
-      setError('Password must be at least 6 characters');
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      console.log("[REGISTER] Validation failed: Passwords do not match");
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (!['renter', 'provider'].includes(formData.role)) {
+      console.log("[REGISTER] Validation failed: Invalid role");
+      setError('Invalid role');
       return;
     }
 
@@ -51,7 +72,7 @@ export default function RegisterPage() {
     console.log("[REGISTER] API request starting...");
 
     try {
-      await register(formData);
+      await register({ name: formData.name.trim(), email: formData.email.trim(), password: formData.password, role: formData.role });
       console.log("[REGISTER] API request succeeded");
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
@@ -88,8 +109,8 @@ export default function RegisterPage() {
 
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         {error && (
-          <div className="mb-4 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded text-center">
-            {error}
+          <div className="mb-4">
+            <Alert message={error} onClose={() => setError('')} type="error" />
           </div>
         )}
         
@@ -130,6 +151,22 @@ export default function RegisterPage() {
           </div>
 
           <div>
+            <label htmlFor="role" className="block text-sm font-medium leading-6 text-gray-900">Role</label>
+            <div className="mt-2">
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
+              >
+                <option value="renter">Renter</option>
+                <option value="provider">Provider</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
             <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
               Password
             </label>
@@ -147,22 +184,21 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-medium leading-6 text-gray-900">
-              I am a...
-            </label>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium leading-6 text-gray-900">Confirm Password</label>
             <div className="mt-2">
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                value={formData.confirmPassword}
                 onChange={handleChange}
-                className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
-              >
-                <option value="renter">Renter</option>
-                <option value="provider">Item Provider</option>
-              </select>
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
+              />
             </div>
           </div>
+
+          
 
           <div className="pt-2">
             <button

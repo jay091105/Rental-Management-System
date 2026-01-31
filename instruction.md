@@ -1,223 +1,215 @@
-# instruction.md — Remaining Work (Detailed Tasks & Acceptance)
-# Rental Management System
-# Scope: After auth + basic rentals API completion
+# instruction.md — Products, Settings & Reports
+# Project: General Rental Management System
+# Reference: UI wireframes (Products, Settings, Reports)
+# Style: Bash-like Copilot instructions
+# Goal: Implement remaining pages & workflows exactly as designed
 
-> This document expands each phase into concrete backend and frontend tasks, API contracts, model fields, acceptance criteria, and tests. Follow conservative changes only — prioritize safety and maintaining existing auth flow.
+# ==================================================
+# GLOBAL TERMINOLOGY RULES
+# ==================================================
 
-## ✅ Completed (DO NOT REWORK)
-- Auth: register/login, role-based redirect
-- Role selection (renter | provider)
-- Client-side auth validation
-- Rentals API (create, list, status update)
-- Rental status enum implemented
-- Basic lint/type cleanup
+TODO replace all "Property" references with "Product" or "Rental Item"
+TODO ensure naming consistency across frontend and backend
+TODO do not introduce property-specific logic anywhere
 
----
+# ==================================================
+# PRODUCTS PAGE
+# ==================================================
 
-## 🏠 PHASE 2 — Properties / Listings (CORE)
-Goal: Full CRUD for properties with role-based access and validation.
+# products list
+TODO implement Products page
+TODO support two views:
+     - Kanban View (card layout)
+     - List View (table layout)
 
-Tasks (Backend):
-- Ensure Product model includes: title, description, pricePerHour, pricePerDay, pricePerMonth, availableUnits (number), location, images[], category, deliveryCharges, deposit, owner (ref to User), status ('available'|'rented').
-- Add validation in `productController.js` and model (required fields, numeric checks).
-- Protect create/update/delete endpoints with `protect` + `authorize('provider','admin')` and verify `req.user._id === product.owner` for updates/deletes.
-- Add ownership check middleware helper (small, reusable function).
-- Ensure endpoints return standardized responses: { success, data, message }.
+TODO add view switcher (kanban <-> list)
+TODO add pagination controls
+TODO add search input
 
-Tasks (Frontend):
-- Provider: add/Edit Property forms (`/properties/add`, `/properties/[id]/edit`) calling `propertyService.create` and `propertyService.update`.
-- Renter: Ensure listings view (`/properties`) and details (`/properties/[id]`) consume backend fields (pricePerDay/Month/Hour, availableUnits, deliveryCharges).
-- Show validation errors from server on the form UI.
+# product visibility
+TODO allow every vendor to see:
+     - their own products
+     - products created by other vendors (read-only)
+TODO visually mark unpublished products
 
-Acceptance Criteria:
-- Provider can create, update, delete their properties; renters cannot access provider-only routes (receive 403).
-- Required field validation prevents invalid saves.
-- Property list shows correct price fields and status.
+# product actions
+TODO allow provider/admin to:
+     - create product
+     - edit product
+     - delete product
+TODO restrict delete/edit to product owner or admin
 
-Tests:
-- Unit tests for `productController.create`/`update` (validation + ownership reject).
-- E2E test: Provider creates property → visible in listings; Renter views property details.
+# ==================================================
+# PRODUCT CREATION / EDIT
+# ==================================================
 
----
+TODO implement New Product page
+TODO product fields:
+     - product name
+     - product type (Goods | Service)
+     - quantity on hand
+     - unit type (dropdown)
+     - sales price (per unit)
+     - cost price (per unit)
+     - category
+     - vendor name (auto-filled)
+     - image upload
 
-## 📆 PHASE 3 — Rental Business Rules
-Goal: Enforce booking rules, ensure lifecycle moves, prevent double booking.
+TODO support service-type products:
+     - deposit
+     - downpayment
+     - warranty
 
-Tasks (Backend):
-- On rental creation (`POST /api/rentals`):
-  - Validate startDate < endDate.
-  - Check overlapping rentals for product: query rentals with overlapping date ranges and active/approved statuses; reject if overlap.
-  - Enforce availableUnits if product tracks units (decrement on approved).
-- Add status transition rules in `rentalController.updateStatus`:
-  - Allowed transitions only (e.g., pending -> approved/rejected; approved -> active; active -> completed; pending -> cancelled by renter).
-- Implement scheduled job (cron or background task) or a simple on-request check to transition statuses based on current date (approved->active when startDate reached; active->completed when endDate passed). Keep minimal: provide an endpoint `POST /api/rentals/cron/advance` for now and add a TODO to run via cron / worker later.
+TODO add publish/unpublish toggle
+TODO restrict publish toggle to admin only
 
-Tasks (Frontend):
-- Property detail: prevent rental creation when product not available or dates invalid (client-side validation before POST).
-- Show clear status labels in rentals list with allowed actions (cancel request if pending, provider can approve/reject).
+# ==================================================
+# SETTINGS MODULE
+# ==================================================
 
-Acceptance Criteria:
-- Backend rejects overlapping rental creation with 409 Conflict and clear message.
-- Only valid transitions are accepted; invalid attempts return 400.
-- Scheduled transition endpoint moves statuses for eligible rentals.
+# settings access
+TODO restrict Settings page to admin only
+TODO non-admin users can view limited profile info only
 
-Tests:
-- Unit tests for overlap detection and status transition rules.
-- E2E: Create two overlapping requests as different renters → second should fail.
+# --------------------------------------------------
+# rental periods
+# --------------------------------------------------
 
----
+TODO implement Rental Periods settings
+TODO allow admin to:
+     - create rental period
+     - edit rental period
+     - delete rental period
 
-## 💳 PHASE 4 — Payments
-Goal: Handle payments after approval and ensure rentals activate only on successful payment.
+TODO rental period fields:
+     - name (Hourly, Daily, Weekly, Monthly, Yearly)
+     - duration (number)
+     - unit (hours | days | weeks | months | years)
 
-Tasks (Backend):
-- Add `Payment` model: { rental: ref Rental, renter: ref User, provider: ref User, amount: Number, status: 'pending'|'paid'|'failed', transactionDate: Date, meta: Object }.
-- Create `paymentController` with endpoints:
-  - `POST /api/payments` (create payment record, optionally call mock gateway)
-  - `POST /api/payments/:id/mock` (simulate success/failure for testing)
-  - `GET /api/payments/:renterId` (renter payment history)
-- Hook payments into rental workflow:
-  - When provider approves a rental, create a payment record (status 'pending') and return payment id.
-  - On payment success, mark payment 'paid', then change rental status to 'active' if startDate reached; otherwise mark as 'approved' until startDate.
-  - If payment fails, rental remains `approved` but cannot become `active` until payment is paid. Optionally set `paymentRequired: true` on rental.
+# --------------------------------------------------
+# attributes
+# --------------------------------------------------
 
-Tasks (Frontend):
-- After approval, show payment UI to renter with mock gateway; call `POST /api/payments/:id/mock` to simulate outcome.
-- Show payment history in renter dashboard.
+TODO implement Attributes settings
+TODO allow admin to:
+     - create attribute
+     - choose display type:
+          radio
+          pills
+          checkbox
+          image
+     - define attribute values
+     - set default value or price (optional)
 
-Acceptance Criteria:
-- Payment attached to rental and renter/provider; successful payment updates both payment and rental statuses.
-- If payment fails, rental cannot activate.
+TODO link attributes to products
 
-Tests:
-- Unit tests for `paymentController` and payment -> rental linkage.
-- E2E: Approve rental -> process mock payment -> rental becomes active on start date.
+# --------------------------------------------------
+# users (admin only)
+# --------------------------------------------------
 
----
+TODO implement Users management page
+TODO allow admin to:
+     - view all users
+     - edit user role (admin | provider | renter)
+     - enable/disable users
 
-## ⭐ PHASE 5 — Reviews & Ratings
-Goal: Allow reviews only after completed rentals and show aggregated scores.
+# --------------------------------------------------
+# company settings
+# --------------------------------------------------
 
-Tasks (Backend):
-- Extend `Review` controller to verify rental completion and ensure single review per rental.
-- Validate rating (1-5). Store review linked to rental/product and user.
-- Recompute `Product.averageRating` and `Product.numOfReviews` on each review create/update/delete.
+TODO implement Company Settings page
+TODO fields:
+     - company name
+     - email
+     - phone
+     - GST IN
+     - address
+     - company logo upload
 
-Tasks (Frontend):
-- Allow review UI only on completed rentals/pages and prevent repeat reviews for same rental.
-- Show average rating and review list on product detail page.
+TODO add Save / Discard behavior
+TODO show security tab with Change Password
 
-Acceptance Criteria:
-- Attempts to review non-completed rentals return 403.
-- Average rating updates correctly.
+# ==================================================
+# REPORTS MODULE
+# ==================================================
 
-Tests:
-- Unit tests for review guard (rental completion), rating validation.
-- E2E: Complete rental -> submit review -> rating/summaries update.
+TODO implement Reports page
+TODO show analytics charts (bar/line)
+TODO support filtering by:
+     - date range
+     - product
+     - vendor
+     - customer
 
----
+TODO reporting rules:
+     - admin sees platform-wide reports
+     - vendor sees only their own data
 
-## 📊 PHASE 6 — Dashboards (ROLE-BASED)
-Goal: Dashboard surfaces the key information per role.
+# --------------------------------------------------
+# import / export
+# --------------------------------------------------
 
-Provider APIs/UI:
-- `GET /api/provider/properties` → properties owned by provider.
-- `GET /api/provider/rentals` → rentals requested for provider's properties (filterable by status).
-- UI: Provider dashboard lists properties and pending requests with approve/reject buttons.
+TODO allow report export:
+     - PDF
+     - Excel
+     - CSV
 
-Renter APIs/UI:
-- `GET /api/renter/rentals` (or `/api/rentals/my`) -> active + history.
-- UI: Renter dashboard shows active rentals, history, payment status, and review actions.
+TODO allow import (if applicable) with validation
 
-Admin APIs/UI:
-- Admin pages to list users, properties, rentals; add ability to disable user.
+# ==================================================
+# NAVIGATION & FLOW
+# ==================================================
 
-Acceptance Criteria:
-- Dashboards show real data tied to the authenticated user and respect role-based access.
+TODO ensure navigation menu includes:
+     - Orders
+     - Products
+     - Reports
+     - Settings
 
-Tests:
-- E2E: Provider sees their properties and can approve a rental; renter sees updated status.
+TODO ensure every page is reachable via navigation
+TODO ensure back navigation exists
+TODO ensure role-based visibility for menu items
 
----
+# ==================================================
+# UI CONSISTENCY
+# ==================================================
 
-## 🧾 Orders / Invoices / Quotations (New - started)
-Goal: Add ordering and billing flows for providers and renters.
+TODO ensure same layout across all pages
+TODO reuse common components:
+     - view switcher
+     - search bar
+     - pagination
+     - action buttons
 
-Notes:
-- Minimal backend models `Order` and `Invoice` created to start the workflow (create/get/update status).
-- Frontend: placeholder pages added (`/orders`, `/quotations`, `/invoices`) and navbar links; wiring the full flow (forms, approvals, invoice generation) is next.
+TODO keep UI consistent with wireframes
+TODO do not redesign visuals
 
-Acceptance criteria:
-- Providers can view orders for their products.
-- Providers can create invoices for orders; renters can view invoices related to their orders.
-- Orders and invoices included in e2e flows in Phase 8.
+# ==================================================
+# CLEANUP & ALIGNMENT
+# ==================================================
 
----
+TODO remove unused pages, routes, and components
+TODO remove deprecated property-related files
+TODO align backend models with frontend naming
+TODO ensure no dead routes remain
 
-## 🔐 PHASE 7 — Security & Robustness
-Goal: Harden API, improve token handling, and standardize error responses.
+# ==================================================
+# FINAL CHECK
+# ==================================================
 
-Tasks:
-- Add token expiry handling in `auth` middleware: detect expired token and return 401 with standardized body.
-- Add central error-handling middleware that returns { success: false, message, errors?: [] }.
-- Add a small helper to auto-logout on frontend when a 401 is received (current `axios` response interceptor already clears token — add redirect to /login behavior).
-- Consider migration plan for httpOnly refresh tokens (design doc + TODO item — do not implement immediately).
+TODO verify:
+     - products -> orders -> invoices -> reports flow
+     - settings changes persist correctly
+     - role-based access enforced everywhere
+     - no "property" wording exists
+     - no broken navigation
 
-Acceptance Criteria:
-- 401 responses from backend cause frontend to clear auth and redirect to /login.
-- Errors are standardized across controllers.
+# DEV SETUP (Turbopack / Next.js)
 
-STATUS: Partially implemented ✅
-- Backend: token expiry handling added in `middleware/auth.js` and a central `middleware/errorHandler.js` added which standardizes error responses and maps `TokenExpiredError` to { success: false, message: 'Token expired', code: 'TOKEN_EXPIRED' }.
-- Frontend: `lib/axios.ts` response interceptor now clears auth, broadcasts a `logout` event across tabs, and redirects to `/login?expired=1` for expired tokens.
-- AuthContext: listens for `logout` storage events and handles auto-logout.
-- Tests: unit tests added for protect middleware (`tests/protectMiddleware.test.js`) and `errorHandler` (`tests/errorHandler.test.js`).
+- If you encounter a stale dev lock error like "Unable to acquire lock at .next/dev/lock":
+  - `npm run dev` will run a predev script that attempts to safely remove stale locks on Windows and Unix.
+  - The cleanup script is located at `frontend/scripts/clean-next-lock.js` and will remove a stale lock if the owning PID is not running or if the lock is older than 5 minutes.
 
-Next steps / TODOs:
-- Design doc and plan for httpOnly refresh tokens and token rotation.
-- Add integration/e2e test to verify full logout and redirect behavior on expired token.
+- If you see a Turbopack warning about multiple lockfiles, ensure only one lockfile exists within the frontend project (we use npm -> `package-lock.json`). Avoid having a root-level lockfile for the monorepo.
 
----
-
-## 🧪 PHASE 8 — Testing
-Goal: Add unit and e2e coverage for core flows.
-
-Unit Tests:
-- Controllers: auth, products, rentals, payments, reviews.
-- Business rules: overlap detection, status transitions, payment gating.
-
-E2E (Playwright):
-- Register → Login → Redirect to appropriate dashboard
-- Provider creates property → Renter creates rental → Provider approves → Renter pays → Rental becomes active/completed → Renter submits review
-- Unauthorized access checks (protected routes)
-
-CI:
-- Add GitHub Actions workflow to run: lint, type-check, unit tests, and Playwright e2e (optional gated on main branch).
-
----
-
-## 🚀 PHASE 9 — Finalization
-Goal: Ship a robust release: tests, docs, pipeline.
-
-Tasks:
-- Finalize API documentation (OpenAPI minimal doc or README listing endpoints & required fields).
-- Add environment variable docs and local dev instructions.
-- Add GitHub Actions for `push to main` and PR checks.
-
-Completion Criteria (detailed):
-- Full rental → payment → review lifecycle works in e2e tests.
-- Role-based access enforced at route & UI levels.
-- Dashboards present accurate live data for each role.
-- No unused routes/pages exist; lint/type checks pass in CI.
-
----
-
-## Implementation notes & conservative rules
-- Make minimal, incremental changes; do not rewrite large parts at once.
-- Add unit tests where logic is added to enforce safety.
-- Keep endpoints backward compatible where possible; deprecate safely when necessary.
-- Document all API changes in README or a new `docs/api.md`.
-
----
-
-_Last updated: Feb 1, 2026_
+# END

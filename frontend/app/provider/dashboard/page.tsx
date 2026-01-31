@@ -24,7 +24,7 @@ export default function ProviderDashboard() {
     const fetchStats = async () => {
       try {
         const [properties, rentalsResp] = await Promise.all([
-          (await import('@/services/api')).providerService.getProperties(),
+          (await import('@/services/api')).providerService.getProducts(),
           (await import('@/services/api')).providerService.getRentals(),
         ]);
 
@@ -44,7 +44,7 @@ export default function ProviderDashboard() {
   if (loading) return <Loading />;
 
   const cards = [
-    { title: 'My Properties', value: stats.properties, icon: Package, color: 'text-green-600', bg: 'bg-green-50', link: '/properties' },
+    { title: 'My Products', value: stats.properties, icon: Package, color: 'text-green-600', bg: 'bg-green-50', link: '/provider/products' },
     { title: 'Rental Requests', value: stats.rentals, icon: ClipboardList, color: 'text-purple-600', bg: 'bg-purple-50', link: '/admin/rentals' },
   ];
 
@@ -63,7 +63,7 @@ export default function ProviderDashboard() {
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           >
             <Plus className="w-5 h-5" />
-            Add Property
+            Add Product
           </Link>
         </div>
 

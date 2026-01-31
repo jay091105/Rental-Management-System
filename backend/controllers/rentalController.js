@@ -31,13 +31,18 @@ exports.createRental = async (req, res, next) => {
     const sd = new Date(startDate);
     const ed = new Date(endDate);
 
-    // Validate dates
-    if (isNaN(sd.getTime()) || isNaN(ed.getTime()) || sd >= ed) {
-      return res.status(400).json({ success: false, message: 'Invalid dates: startDate must be before endDate' });
+    // Validate dates (allow same-day rentals — start may be equal to end)
+    if (isNaN(sd.getTime()) || isNaN(ed.getTime()) || sd > ed) {
+      return res.status(400).json({ success: false, message: 'Invalid dates: startDate must be on or before endDate' });
     }
 
     const product = await Product.findById(productId);
     if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    // Disallow rentals on unpublished products
+    if (!product.published) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 

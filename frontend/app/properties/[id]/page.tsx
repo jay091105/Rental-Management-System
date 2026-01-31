@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { propertyService, rentalService, reviewService } from '@/services/api';
-import { Property, Review } from '@/types';
+import { productService, rentalService, reviewService, orderService, quotationService } from '@/services/api';
+import { Product, Review } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
@@ -22,12 +22,12 @@ import {
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
-export default function PropertyDetailsPage() {
+export default function ProductDetailsPage() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
-  const [property, setProperty] = useState<Property | null>(null);
+  const { isAuthenticated, user } = useAuth();
+  const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [rentalLoading, setRentalLoading] = useState(false);
@@ -40,22 +40,22 @@ export default function PropertyDetailsPage() {
   const [reviewLoading, setReviewLoading] = useState(false);
 
   useEffect(() => {
-    const fetchPropertyAndReviews = async () => {
+    const fetchProductAndReviews = async () => {
       try {
-        const [propertyData, reviewsData] = await Promise.all([
-          propertyService.getById(id),
-          reviewService.getPropertyReviews(id),
+        const [productData, reviewsData] = await Promise.all([
+          productService.getById(id),
+          reviewService.getProductReviews(id),
         ]);
-        setProperty(propertyData);
+        setProduct(productData);
         setReviews(reviewsData.data || []);
       } catch (err) {
-        console.error('Failed to fetch property details:', err);
-        toast.error('Failed to load property details');
+        console.error('Failed to fetch product details:', err);
+        toast.error('Failed to load product details');
       } finally {
         setLoading(false);
       }
     };
-    if (id) fetchPropertyAndReviews();
+    if (id) fetchProductAndReviews();
   }, [id]);
 
   const addToCart = async () => {
@@ -95,17 +95,18 @@ export default function PropertyDetailsPage() {
         ...reviewForm,
       });
       toast.success('Review added successfully');
-      // Refresh reviews and property
-      const [propertyData, reviewsData] = await Promise.all([
-        propertyService.getById(id),
-        reviewService.getPropertyReviews(id),
+      // Refresh reviews and product
+      const [productData, reviewsData] = await Promise.all([
+        productService.getById(id),
+        reviewService.getProductReviews(id),
       ]);
-      setProperty(propertyData);
+      setProduct(productData);
       setReviews(reviewsData.data || []);
       setReviewForm({ rating: 5, comment: '' });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to add review:', err);
-      toast.error('Failed to add review');
+      const msg = err?.response?.data?.message || 'Failed to add review';
+      toast.error(msg);
     } finally {
       setReviewLoading(false);
     }
@@ -113,14 +114,14 @@ export default function PropertyDetailsPage() {
 
   if (loading) return <Loading />;
 
-  if (!property) {
+  if (!product) {
     return (
       <div className="min-h-screen bg-surface-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
             <Package className="w-10 h-10 text-gray-400" />
           </div>
-          <p className="text-2xl font-bold text-gray-900 mb-4">Property not found</p>
+          <p className="text-2xl font-bold text-gray-900 mb-4">Product not found</p>
           <Link href="/">
             <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
               Go Back Home
@@ -133,10 +134,10 @@ export default function PropertyDetailsPage() {
 
   const price =
     rentalDuration === 'HOUR'
-      ? property.pricePerHour
+      ? product?.pricePerHour
       : rentalDuration === 'MONTH'
-      ? property.pricePerMonth
-      : property.pricePerDay;
+      ? product?.pricePerMonth
+      : product?.pricePerDay; 
 
   const calculateTotalPrice = () => {
     if (!startDate || !endDate) return price;
@@ -144,7 +145,7 @@ export default function PropertyDetailsPage() {
     const end = new Date(endDate);
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-    return (price * diffDays + (property.deliveryCharges || 0) + (property.deposit || 0)) * quantity;
+    return (Number(price || 0) * diffDays + (product?.deliveryCharges || 0) + (product?.deposit || 0)) * quantity;
   };
 
   const totalPrice = calculateTotalPrice();
@@ -158,7 +159,7 @@ export default function PropertyDetailsPage() {
             className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors font-medium text-sm"
           >
             <ArrowLeft size={18} />
-            <span>Back to Properties</span>
+            <span>Back to Products</span>
           </Link>
         </div>
       </div>
@@ -169,10 +170,10 @@ export default function PropertyDetailsPage() {
             <div className="p-8 bg-gray-50/50">
               <div className="space-y-4 sticky top-28">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
-                  {property.images && property.images.length > 0 ? (
+                  {product.images && product.images.length > 0 ? (
                     <Image
-                      src={property.images[selectedImage]}
-                      alt={property.title}
+                      src={product.images[selectedImage]}
+                      alt={product.title}
                       fill
                       className="object-cover"
                       sizes="(max-width: 1024px) 100vw, 50vw"
@@ -183,7 +184,7 @@ export default function PropertyDetailsPage() {
                       <Package className="w-20 h-20 text-gray-300" />
                     </div>
                   )}
-                  {property.availableUnits > 0 ? (
+                  {product.availableUnits > 0 ? (
                     <span className="absolute top-4 right-4 px-4 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg backdrop-blur-sm">
                       In Stock
                     </span>
@@ -194,9 +195,9 @@ export default function PropertyDetailsPage() {
                   )}
                 </div>
 
-                {property.images && property.images.length > 1 && (
+                {product?.images && product.images.length > 1 && (
                   <div className="grid grid-cols-4 gap-3">
-                    {property.images.slice(0, 4).map((img: string, idx: number) => (
+                    {product.images.slice(0, 4).map((img: string, idx: number) => (
                       <button
                         key={idx}
                         onClick={() => setSelectedImage(idx)}
@@ -208,7 +209,7 @@ export default function PropertyDetailsPage() {
                       >
                         <Image
                           src={img}
-                          alt={`${property.title} ${idx + 1}`}
+                          alt={`${product.title} ${idx + 1}`}
                           fill
                           className="object-cover"
                           sizes="100px"
@@ -224,27 +225,35 @@ export default function PropertyDetailsPage() {
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700">
-                    {property.category}
+                    {product?.category}
                   </span>
-                  <div className="flex items-center gap-1 text-yellow-500">
-                    <Star className="w-4 h-4 fill-current" />
-                    <span className="text-sm font-bold text-gray-900">
-                      {property.averageRating || 0}
-                    </span>
-                    <span className="text-xs text-gray-400 font-medium">
-                      ({property.numOfReviews || 0} reviews)
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-yellow-500">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="text-sm font-bold text-gray-900">
+                        {product?.averageRating || 0}
+                      </span>
+                      <span className="text-xs text-gray-400 font-medium">
+                        ({product?.numOfReviews || 0} reviews)
+                      </span>
+                    </div>
+
+                    {(user && (user.role === 'admin' || product?.owner === user._id || product?.owner?.toString?.() === user._id || product?.ownerId === user._id)) && (
+                      <Link href={`/properties/${id}/edit`} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 text-sm font-medium">
+                        Edit
+                      </Link>
+                    )}
                   </div>
                 </div>
 
                 <h1 className="text-4xl font-extrabold text-gray-900 mb-2 leading-tight">
-                  {property.title}
+                  {product.title}
                 </h1>
-                <p className="text-lg text-gray-500 font-medium mb-6">{property.brandName}</p>
+                <p className="text-lg text-gray-500 font-medium mb-6">{product.brandName}</p>
 
                 <div className="flex items-center gap-2 text-gray-600 mb-8">
                   <MapPin size={18} className="text-blue-500" />
-                  <span className="font-medium">{property.location}</span>
+                  <span className="font-medium">{product?.location}</span>
                 </div>
 
                 <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100/50 mb-8">
@@ -296,6 +305,9 @@ export default function PropertyDetailsPage() {
                         />
                       </div>
                     </div>
+                    {(!startDate || !endDate || new Date(startDate) > new Date(endDate)) && (
+                      <p className="text-sm text-red-500 mt-2">Please select valid start and end dates (start must be on or before end).</p>
+                    )}
 
                     <div>
                       <div className="flex items-center justify-between">
@@ -303,7 +315,7 @@ export default function PropertyDetailsPage() {
                           Quantity
                         </label>
                         <span className="text-xs text-blue-600 font-medium">
-                          {property.availableUnits} available
+                          {product.availableUnits} available
                         </span>
                       </div>
                       <div className="mt-2 flex items-center gap-3">
@@ -315,8 +327,8 @@ export default function PropertyDetailsPage() {
                         </button>
                         <span className="flex-1 text-center font-bold text-gray-900">{quantity}</span>
                         <button
-                          onClick={() => setQuantity(Math.min(property.availableUnits, quantity + 1))}
-                          disabled={quantity >= property.availableUnits}
+                          onClick={() => setQuantity(Math.min(product!.availableUnits, quantity + 1))}
+                          disabled={quantity >= (product?.availableUnits || 0)}
                           className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors disabled:opacity-50"
                         >
                           <Plus size={16} />
@@ -330,12 +342,18 @@ export default function PropertyDetailsPage() {
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Base Rate</span>
                     <span className="font-medium">
-                      ₹{price}/{rentalDuration.toLowerCase()}
+                      {price && Number(price) > 0 ? (
+                        <>
+                          {'₹'}{Number(price).toLocaleString(undefined, { maximumFractionDigits: 2 })}/{rentalDuration.toLowerCase()}
+                        </>
+                      ) : (
+                        'Contact'
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Deposit (Refundable)</span>
-                    <span className="font-medium">₹{property.deposit || 0}</span>
+                    <span className="font-medium">₹{product?.deposit || 0}</span>
                   </div>
                   <div className="pt-3 border-t border-gray-100 flex justify-between items-end">
                     <span className="text-lg font-bold text-gray-900">Total</span>
@@ -349,7 +367,7 @@ export default function PropertyDetailsPage() {
 
                 <button
                   onClick={addToCart}
-                  disabled={rentalLoading || property.availableUnits === 0}
+                  disabled={rentalLoading || (product?.availableUnits || 0) === 0 || !startDate || !endDate || new Date(startDate) >= new Date(endDate)}
                   className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={20} />
@@ -386,7 +404,7 @@ export default function PropertyDetailsPage() {
             <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Description</h3>
               <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                {property.description}
+                {product.description}
               </p>
             </section>
 
@@ -398,11 +416,11 @@ export default function PropertyDetailsPage() {
                     <div className="flex items-center gap-1 text-yellow-500 justify-end">
                       <Star className="w-5 h-5 fill-current" />
                       <span className="text-xl font-bold text-gray-900">
-                        {property.averageRating || 0}
+                        {product?.averageRating || 0}
                       </span>
                     </div>
                     <p className="text-sm text-gray-400 font-medium">
-                      Based on {property.numOfReviews || 0} reviews
+                      Based on {product?.numOfReviews || 0} reviews
                     </p>
                   </div>
                 </div>
@@ -420,21 +438,16 @@ export default function PropertyDetailsPage() {
                         const qtyInput = document.getElementById('orderQty') as HTMLInputElement;
                         const qty = Number(qtyInput?.value || 1);
                         try {
-                          const res = await fetch('/api/orders', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ productId: property._id, quantity: qty })
-                          });
-                          const data = await res.json();
-                          if (data.success) {
+                          const data = await orderService.create({ productId: product?._id, quantity: qty });
+                          if (data?.success) {
                             alert('Order requested successfully');
                             window.location.href = '/orders';
                           } else {
-                            alert(data.message || 'Failed to create order');
+                            alert(data?.message || 'Failed to create order');
                           }
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert('Failed to create order');
+                          alert(err?.response?.data?.message || 'Failed to create order');
                         }
                       }}
                       className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -445,21 +458,16 @@ export default function PropertyDetailsPage() {
                         const qtyInput = document.getElementById('orderQty') as HTMLInputElement;
                         const qty = Number(qtyInput?.value || 1);
                         try {
-                          const res = await fetch('/api/quotations', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ productId: property._id, quantity: qty })
-                          });
-                          const data = await res.json();
-                          if (data.success) {
+                          const data = await quotationService.create({ productId: product?._id, quantity: qty });
+                          if (data?.success) {
                             alert('Quotation requested successfully');
                             window.location.href = '/quotations';
                           } else {
-                            alert(data.message || 'Failed to request quotation');
+                            alert(data?.message || 'Failed to request quotation');
                           }
-                        } catch (err) {
+                        } catch (err: any) {
                           console.error(err);
-                          alert('Failed to request quotation');
+                          alert(err?.response?.data?.message || 'Failed to request quotation');
                         }
                       }}
                       className="bg-gray-900 text-white px-4 py-2 rounded"

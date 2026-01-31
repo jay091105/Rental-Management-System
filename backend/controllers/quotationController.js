@@ -9,6 +9,12 @@ exports.createQuotation = async (req, res, next) => {
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
+    // Ensure renters can only request quotations for published, available items
+    if (!product.published) return res.status(404).json({ success: false, message: 'Product not found' });
+    if (product.availableUnits != null && Number(quantity) > product.availableUnits) {
+      return res.status(400).json({ success: false, message: 'Requested quantity exceeds available units' });
+    }
+
     const quote = await Quotation.create({
       requester: req.user.id,
       provider: product.owner,

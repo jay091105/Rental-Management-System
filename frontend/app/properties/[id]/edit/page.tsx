@@ -1,78 +1,55 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { productService } from '@/services/api';
-import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Loading from '@/components/Loading';
 import { useAuth } from '@/context/AuthContext';
 
-export default function AddProductPage() {
+export default function EditProductPage() {
   const { user } = useAuth();
-
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    location: '',
-    price: 0,
-    pricePerHour: 0,
-    pricePerDay: 0,
-    pricePerMonth: 0,
-    availableUnits: 1,
-    deliveryCharges: 0,
-    deposit: 0,
-    brandName: '',
-    colour: '',
-    imageURL: '',
-    photosCSV: '' /* comma-separated image URLs */,
-    category: 'Other',
-    published: false,
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
+  const [formData, setFormData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-    try {
-      // Basic client validation: required fields and at least one pricing field
-      if (!formData.title || !formData.description || !formData.location) {
-        setError('Please fill title, description and location');
-        setIsSubmitting(false);
-        return;
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const product = await productService.getById(id);
+        // Map product shape to form shape used by Add/Edit pages
+        setFormData({
+          title: product.title || product.name || '',
+          description: product.description || '',
+          location: product.location || '',
+          price: product.price || 0,
+          pricePerHour: product.pricePerHour || 0,
+          pricePerDay: product.pricePerDay || 0,
+          pricePerMonth: product.pricePerMonth || 0,
+          availableUnits: product.availableUnits ?? 1,
+          deliveryCharges: product.deliveryCharges || 0,
+          deposit: product.deposit || 0,
+          brandName: product.brandName || '',
+          colour: product.colour || '',
+          imageURL: product.images && product.images.length ? product.images[0] : '',
+          photosCSV: product.images && product.images.length ? product.images.slice(1).join(', ') : '',
+          category: product.category || 'Other',
+          published: !!product.published,
+        });
+      } catch (err) {
+        console.error('Failed to load product for editing', err);
+        setError('Failed to load product');
+      } finally {
+        setLoading(false);
       }
-
-      if (!formData.price && !formData.pricePerDay && !formData.pricePerHour && !formData.pricePerMonth) {
-        setError('Please set at least one pricing field (pricePerHour/pricePerDay/pricePerMonth/price)');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const images = formData.photosCSV
-        ? formData.photosCSV.split(',').map(i => i.trim()).filter(Boolean)
-        : formData.imageURL ? [formData.imageURL] : [];
-
-      const dataToSubmit = {
-        ...formData,
-        images,
-      };
-
-      const created = await productService.create(dataToSubmit);
-      // If provider added the product, take them to provider dashboard so they immediately see their new item
-      if (user?.role === 'provider') {
-        router.push('/provider/products');
-      } else {
-        router.push(`/properties/${created._id || created.id}`);
-      }
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || 'Failed to add product');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    };
+    if (id) load();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement;
@@ -88,11 +65,39 @@ export default function AddProductPage() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const images = formData.photosCSV
+        ? formData.photosCSV.split(',').map((i: string) => i.trim()).filter(Boolean)
+        : formData.imageURL ? [formData.imageURL] : [];
+
+      const dataToSubmit = {
+        ...formData,
+        images,
+      };
+
+      await productService.update(id, dataToSubmit);
+      router.push(`/properties/${id}`);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to update product');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) return <Loading />;
+  if (!formData) return <div className="p-8">Product not found</div>;
+
   return (
-    <ProtectedRoute allowedRoles={['admin', 'provider']}>
+    <ProtectedRoute allowedRoles={["admin", "provider"]}>
       <div className="max-w-2xl mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-8">Add New Product</h1>
-        
+        <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
+
         {error && (
           <div className="mb-4 p-4 text-red-600 bg-red-50 border border-red-200 rounded-lg">
             {error}
@@ -109,7 +114,6 @@ export default function AddProductPage() {
               value={formData.title}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Product Title"
             />
           </div>
 
@@ -122,7 +126,6 @@ export default function AddProductPage() {
               value={formData.description}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Describe your product..."
             />
           </div>
 
@@ -156,7 +159,6 @@ export default function AddProductPage() {
               value={formData.location}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Pickup Location"
             />
           </div>
 
@@ -296,7 +298,7 @@ export default function AddProductPage() {
             disabled={isSubmitting}
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-md disabled:opacity-50"
           >
-            {isSubmitting ? 'Adding Product...' : 'Add Product'}
+            {isSubmitting ? 'Updating Product...' : 'Update Product'}
           </button>
         </form>
       </div>

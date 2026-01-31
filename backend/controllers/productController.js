@@ -10,6 +10,19 @@ exports.getProducts = async (req, res, next) => {
         // Copy req.query
         const reqQuery = { ...req.query };
 
+        // Default: only published products are visible to public
+        if (!reqQuery.hasOwnProperty('published')) {
+            reqQuery.published = true;
+        }
+
+        // Default: only include products with available units > 0 unless caller provided a filter
+        // This ensures renters only see bookable items by default
+        const hasAvailabilityFilter = Object.keys(reqQuery).some(k => k === 'availableUnits' || k.startsWith('availableUnits['));
+        if (!hasAvailabilityFilter) {
+            // use non-$ operator form here; regex below will convert 'gt' to '$gt'
+            reqQuery.availableUnits = { gt: 0 };
+        }
+
         // Fields to exclude
         const removeFields = ['select', 'sort', 'page', 'limit'];
 
@@ -51,6 +64,9 @@ exports.getProducts = async (req, res, next) => {
         // Executing query
         const products = await query;
 
+        // Debug: log public listing count
+        try { console.debug(`[productController] public listing returned ${products.length} items`); } catch(e) {}
+
         // Pagination result
         const pagination = {};
 
@@ -88,6 +104,17 @@ exports.getProduct = async (req, res, next) => {
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
+
+        // If product is unpublished, allow owner or admin to view, otherwise hide
+        if (!product.published) {
+            if (!req.user) {
+                return res.status(404).json({ success: false, message: 'Product not found' });
+            }
+            if (product.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+                return res.status(404).json({ success: false, message: 'Product not found' });
+            }
+        }
+
         res.status(200).json({ success: true, data: product });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
@@ -101,6 +128,16 @@ exports.createProduct = async (req, res, next) => {
     try {
         // Add user to req.body
         req.body.owner = req.user.id;
+
+        // Only admins may explicitly override the published flag during create
+        if (typeof req.body.published !== 'undefined' && req.user.role !== 'admin') {
+            delete req.body.published;
+        }
+
+        // Providers: default newly created products to published (so they are visible to renters) unless explicitly set by admin
+        if (req.user.role === 'provider' && typeof req.body.published === 'undefined') {
+            req.body.published = true;
+        }
 
         // Basic validation
         const { title, description, category, location } = req.body;
@@ -138,6 +175,11 @@ exports.updateProduct = async (req, res, next) => {
         // Make sure user is product owner
         if (product.owner.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({ success: false, message: 'Not authorized to update this product' });
+        }
+
+        // Only admins can toggle published state
+        if (typeof req.body.published !== 'undefined' && req.user.role !== 'admin') {
+            delete req.body.published;
         }
 
         if (req.body.availableUnits && Number(req.body.availableUnits) < 0) {

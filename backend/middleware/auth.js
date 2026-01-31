@@ -1,6 +1,30 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Optional auth: sets req.user if Authorization header present, but does not require it
+exports.optionalAuth = async (req, res, next) => {
+    let token;
+
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) return next();
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = await User.findById(decoded.id);
+    } catch (err) {
+        // ignore token errors here — treat as unauthenticated
+        console.warn('optionalAuth token verification failed:', err.message);
+    }
+
+    next();
+};
+
 // Protect routes
 exports.protect = async (req, res, next) => {
     let token;

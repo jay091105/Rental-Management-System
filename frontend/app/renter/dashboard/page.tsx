@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { propertyService, rentalService } from '@/services/api';
+import { productService, rentalService } from '@/services/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
@@ -22,7 +22,7 @@ export default function RenterDashboard() {
     const fetchStats = async () => {
       try {
         const [properties, rentals] = await Promise.all([
-          propertyService.getAll(),
+          productService.getAll(),
           rentalService.getAll(),
         ]);
         

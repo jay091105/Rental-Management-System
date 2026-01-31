@@ -66,7 +66,7 @@ export default function RentalsPage() {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-gray-900">{rental.product?.title || 'Unknown Property'}</h3>
+                    <h3 className="text-xl font-bold text-gray-900">{rental.product?.title || 'Unknown Product'}</h3>
                     <p className="text-gray-500 flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       {rental.startDate} - {rental.endDate}

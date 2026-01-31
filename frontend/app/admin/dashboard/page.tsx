@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { propertyService, rentalService, userService } from '@/services/api';
+import { productService, rentalService, userService } from '@/services/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
@@ -24,7 +24,7 @@ export default function AdminDashboard() {
       try {
         const [users, properties, rentals] = await Promise.all([
           userService.getAll(),
-          propertyService.getAll(),
+          productService.getAll(),
           rentalService.getAll(),
         ]);
         setStats({

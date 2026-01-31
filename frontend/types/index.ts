@@ -5,7 +5,7 @@ export interface User {
   role: 'admin' | 'provider' | 'renter';
 }
 
-export interface Property {
+export interface Product {
   _id: string;
   id: string;
   name: string;
@@ -22,6 +22,8 @@ export interface Property {
   brandName: string;
   colour: string;
   ownerId: string;
+  owner?: string; // backend may return owner or ownerId
+  published?: boolean;
   status: 'available' | 'rented';
   averageRating?: number;
   numOfReviews?: number;
@@ -30,8 +32,8 @@ export interface Property {
   deposit: number;
 }
 
-// Alias for incremental rename: Product is equivalent to Property for now
-export type Product = Property;
+// Backwards-compat alias: keep `Property` for now while we incrementally rename
+export type Property = Product;
 
 export interface Review {
   _id: string;
@@ -57,7 +59,7 @@ export interface Rental {
   totalPrice: number;
   payment?: string | null;
   paymentRequired?: boolean;
-  product?: Property;
+  product?: Product;
   renter?: User;
 }
 

@@ -1,28 +1,31 @@
 import api from '../lib/axios';
-import { Property, Rental, User } from '../types';
+import { Product, Rental, User } from '../types';
 
-export const propertyService = {
+export const productService = {
   getAll: async (params?: Record<string, string | number>) => {
-    const response = await api.get<{ data: Property[] }>('/products', { params });
+    const response = await api.get<{ data: Product[] }>('/products', { params });
     return response.data.data;
   },
   getById: async (id: string) => {
-    const response = await api.get<{ data: Property }>(`/products/${id}`);
+    const response = await api.get<{ data: Product }>(`/products/${id}`);
     return response.data.data;
   },
   // ... other methods
-  create: async (data: Partial<Property>) => {
-    const response = await api.post<{ data: Property }>('/products', data);
+  create: async (data: Partial<Product>) => {
+    const response = await api.post<{ data: Product }>('/products', data);
     return response.data.data;
   },
-  update: async (id: string, data: Partial<Property>) => {
-    const response = await api.put<{ data: Property }>(`/products/${id}`, data);
+  update: async (id: string, data: Partial<Product>) => {
+    const response = await api.put<{ data: Product }>(`/products/${id}`, data);
     return response.data.data;
   },
   delete: async (id: string) => {
     await api.delete(`/products/${id}`);
   },
 };
+
+// Backwards-compatible alias
+export const propertyService = productService;
 
 export const rentalService = {
   create: async (data: Record<string, unknown>) => {
@@ -74,12 +77,37 @@ export const paymentService = {
 };
 
 export const providerService = {
-  getProperties: async () => {
-    const response = await api.get('/provider/properties');
+  getProducts: async () => {
+    const response = await api.get('/provider/products');
     return response.data.data;
   },
   getRentals: async () => {
     const response = await api.get('/provider/rentals');
+    return response.data;
+  }
+};
+
+// Backwards-compatible alias
+export const providerServiceLegacy = { ...providerService, getProperties: providerService.getProducts };
+
+export const orderService = {
+  create: async (data: { productId: string; quantity?: number }) => {
+    const response = await api.post('/orders', data);
+    return response.data;
+  },
+  getById: async (id: string) => {
+    const response = await api.get(`/orders/${id}`);
+    return response.data;
+  }
+};
+
+export const quotationService = {
+  create: async (data: { productId: string; quantity?: number }) => {
+    const response = await api.post('/quotations', data);
+    return response.data;
+  },
+  getById: async (id: string) => {
+    const response = await api.get(`/quotations/${id}`);
     return response.data;
   }
 };
@@ -89,8 +117,11 @@ export const reviewService = {
     const response = await api.post('/reviews', data);
     return response.data;
   },
-  getPropertyReviews: async (productId: string) => {
+  getProductReviews: async (productId: string) => {
     const response = await api.get(`/reviews/product/${productId}`);
     return response.data;
   },
 };
+
+// Backwards-compatible alias
+export const reviewServiceLegacy = { ...reviewService, getPropertyReviews: reviewService.getProductReviews };

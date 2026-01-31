@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { propertyService } from '@/services/api';
-import { Property } from '@/types';
+import { productService } from '@/services/api';
+import { Product } from '@/types';
 import {
   Search,
   ShoppingCart,
@@ -20,7 +20,7 @@ export default function Home() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<{
@@ -73,7 +73,7 @@ export default function Home() {
     const fetchProperties = async () => {
       setLoading(true);
       try {
-        const data = await propertyService.getAll({
+        const data = await productService.getAll({
           search,
           category: filters.category,
           brandName: filters.brandName,
@@ -82,11 +82,11 @@ export default function Home() {
           maxPrice: filters.maxPrice,
         });
 
-        setProperties(data || []);
+        setProducts(data || []);
 
         // Extract unique brands and colours
-        const uniqueBrands = Array.from(new Set((data || []).map((p: Property) => p.brandName))) as string[];
-        const uniqueColours = Array.from(new Set((data || []).map((p: Property) => p.colour || ''))) as string[];
+        const uniqueBrands = Array.from(new Set((data || []).map((p: Product) => p.brandName))) as string[];
+        const uniqueColours = Array.from(new Set((data || []).map((p: Product) => p.colour || ''))) as string[];
 
         setBrands(uniqueBrands);
         setColours(uniqueColours);
@@ -101,12 +101,12 @@ export default function Home() {
     fetchProperties();
   }, [search, filters]);
 
-  const addToCart = (property: Property) => {
+  const addToCart = (product: Product) => {
     if (!user) {
       toast.error('Please log in to add items to your cart.');
       return;
     }
-    toast.success(`${property.name} added to cart`);
+    toast.success(`${product.name} added to cart`);
   };
 
   if (authLoading) return null;
@@ -188,31 +188,31 @@ export default function Home() {
               <div key={i} className="bg-white rounded-2xl p-4 shadow-sm animate-pulse h-[400px]"></div>
             ))}
           </div>
-        ) : properties.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="bg-white rounded-3xl p-16 text-center shadow-sm border border-gray-100 max-w-2xl mx-auto">
             <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-50 rounded-full mb-6 text-gray-300">
               <Search size={48} />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No properties found</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-500 max-w-sm mx-auto mb-8">Try adjusting your search or clearing filters.</p>
             <button onClick={() => setFilters({ category: '', brandName: '', colour: '', minPrice: '', maxPrice: '', duration: 'DAY' })} className="btn-primary">Clear Filters</button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {properties.map((property: Property) => {
+            {products.map((product: Product) => {
               const price = filters.duration === 'HOUR'
-                ? property.pricePerHour
+                ? product.pricePerHour
                 : filters.duration === 'MONTH'
-                ? property.pricePerMonth
-                : property.pricePerDay;
+                ? product.pricePerMonth
+                : product.pricePerDay;
 
               return (
-                <div key={property._id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+                <div key={product._id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
                   <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-                    {property.photos && property.photos.length > 0 ? (
+                    {product.photos && product.photos.length > 0 ? (
                       <Image
-                        src={`http://localhost:5000${property.photos[0]}`}
-                        alt={property.name}
+                        src={`http://localhost:5000${product.photos[0]}`}
+                        alt={product.name}
                         fill
                         sizes="100%"
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -228,9 +228,9 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="p-5 flex-1 flex flex-col">
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-50 text-brand-600 mb-2">{property.category}</span>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-brand-600 transition-colors">{property.name}</h3>
-                    <p className="text-sm text-gray-500 mb-4">{property.brandName}</p>
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-50 text-brand-600 mb-2">{product.category}</span>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-brand-600 transition-colors">{product.name}</h3>
+                    <p className="text-sm text-gray-500 mb-4">{product.brandName}</p>
                     <div className="mt-auto pt-4 border-t border-gray-50 flex items-end justify-between">
                       <div>
                         <p className="text-xs text-gray-400 font-medium mb-0.5">Price per {filters.duration.toLowerCase()}</p>
@@ -239,7 +239,7 @@ export default function Home() {
                           <span className="text-2xl font-extrabold text-gray-900">{price}</span>
                         </div>
                       </div>
-                      <button onClick={() => addToCart(property)} className="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center hover:bg-brand-600 hover:text-white transition-colors shadow-sm">
+                      <button onClick={() => addToCart(product)} className="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center hover:bg-brand-600 hover:text-white transition-colors shadow-sm">
                         <ShoppingCart size={18} />
                       </button>
                     </div>

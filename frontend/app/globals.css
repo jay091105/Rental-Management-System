@@ -1,5 +1,7 @@
 /* Tailwind v4 Import */
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 
 

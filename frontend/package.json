@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node ./scripts/clean-next-lock.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
-    "autoprefixer": "^10.4.24",
     "axios": "^1.13.4",
     "debug": "^4.4.3",
     "lucide-react": "^0.563.0",
@@ -20,13 +20,14 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
-    "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.24",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
     "typescript": "^5"
   }
 }

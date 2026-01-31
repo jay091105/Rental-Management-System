@@ -86,6 +86,10 @@ const productSchema = new mongoose.Schema({
         default: 0,
         min: [0, 'deposit cannot be negative']
     },
+    published: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
         enum: ['available', 'rented'],

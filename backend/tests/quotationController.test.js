@@ -25,4 +25,20 @@ describe('quotationController.createQuotation', () => {
     await quotationController.createQuotation(req, res);
     expect(res.status).toHaveBeenCalledWith(404);
   });
+
+  test('rejects when product is unpublished', async () => {
+    req.body.productId = 'p2';
+    req.body.quantity = 1;
+    Product.findById.mockResolvedValue({ _id: 'p2', published: false, availableUnits: 5 });
+    await quotationController.createQuotation(req, res);
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  test('rejects when requested quantity exceeds availability', async () => {
+    req.body.productId = 'p3';
+    req.body.quantity = 3;
+    Product.findById.mockResolvedValue({ _id: 'p3', published: true, availableUnits: 2 });
+    await quotationController.createQuotation(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
 });

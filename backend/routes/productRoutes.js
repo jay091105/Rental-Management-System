@@ -12,12 +12,14 @@ const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
 const ensureOwnership = require('../middleware/ownership');
 
+const { optionalAuth } = require('../middleware/auth');
+
 router.route('/')
-    .get(getProducts)
+    .get(optionalAuth, getProducts)
     .post(protect, authorize('provider','admin'), createProduct);
 
 router.route('/:id')
-    .get(getProduct)
+    .get(optionalAuth, getProduct)
     .put(protect, authorize('provider','admin'), ensureOwnership('Product','id'), updateProduct)
     .delete(protect, authorize('provider','admin'), ensureOwnership('Product','id'), deleteProduct);
 
