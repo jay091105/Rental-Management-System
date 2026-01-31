@@ -1,31 +1,71 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserPlus } from 'lucide-react';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'renter' as 'renter' | 'owner',
+    role: 'tenant',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register } = useAuth();
+  
+  const { register, isAuthenticated, loading, user, redirectUser } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      redirectUser(user.role);
+    }
+  }, [isAuthenticated, loading, user, redirectUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    console.log("[REGISTER] Submitting form");
+    console.log("[REGISTER] Payload:", { 
+      name: formData.name, 
+      email: formData.email, 
+      role: formData.role,
+      password: '***' 
+    });
+
+    // Client-side validation
+    if (!formData.name || !formData.email || !formData.password || !formData.role) {
+      console.log("[REGISTER] Validation failed: Missing fields");
+      setError('All fields are required');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      console.log("[REGISTER] Validation failed: Password too short");
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
     setIsSubmitting(true);
+    console.log("[REGISTER] API request starting...");
 
     try {
       await register(formData);
+      console.log("[REGISTER] API request succeeded");
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || 'Failed to register. Please try again.');
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { data?: { message?: string }, status?: number } };
+        console.log("[REGISTER] API request failed:", {
+          status: axiosError.response?.status,
+          message: axiosError.response?.data?.message
+        });
+        setError(axiosError.response?.data?.message || 'Registration failed. Please try again.');
+      } else {
+        console.log("[REGISTER] API request failed with unknown error");
+        setError('Registration failed. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -35,86 +75,110 @@ export default function RegisterPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  return (
-    <div className="max-w-md mx-auto mt-8">
-      <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-        <div className="text-center mb-8">
-          <div className="bg-blue-100 p-3 rounded-full w-12 h-12 flex items-center justify-center mx-auto text-blue-600 mb-4">
-            <UserPlus className="w-6 h-6" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-600">Join our rental community today</p>
-        </div>
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
 
+  return (
+    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+          Create your account
+        </h2>
+      </div>
+
+      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm border border-red-100">
+          <div className="mb-4 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded text-center">
             {error}
           </div>
         )}
+        
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
+              Full Name
+            </label>
+            <div className="mt-2">
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
+              />
+            </div>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              placeholder="John Doe"
-              required
-            />
+            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+              Email address
+            </label>
+            <div className="mt-2">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
+              />
+            </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              placeholder="you@example.com"
-              required
-            />
+            <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+              Password
+            </label>
+            <div className="mt-2">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
+              />
+            </div>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              placeholder="••••••••"
-              required
-            />
+            <label htmlFor="role" className="block text-sm font-medium leading-6 text-gray-900">
+              I am a...
+            </label>
+            <div className="mt-2">
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3"
+              >
+                <option value="tenant">Tenant</option>
+                <option value="owner">Property Owner</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">I want to...</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <option value="renter">Rent a property</option>
-              <option value="owner">List my property</option>
-            </select>
+              {isSubmitting ? 'Creating account...' : 'Register'}
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full bg-blue-600 text-white py-2 rounded-lg font-semibold transition shadow-md ${
-              isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700'
-            }`}
-          >
-            {isSubmitting ? 'Creating account...' : 'Register'}
-          </button>
         </form>
 
-        <p className="mt-8 text-center text-gray-600 text-sm">
+        <p className="mt-10 text-center text-sm text-gray-500">
           Already have an account?{' '}
-          <Link href="/login" className="text-blue-600 font-bold hover:underline">
+          <Link href="/login" className="font-semibold leading-6 text-blue-600 hover:text-blue-500">
             Sign in
           </Link>
         </p>

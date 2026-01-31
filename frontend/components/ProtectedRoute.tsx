@@ -7,7 +7,7 @@ import Loading from './Loading';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  allowedRoles?: ('admin' | 'owner' | 'renter')[];
+  allowedRoles?: ('admin' | 'owner' | 'tenant')[];
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
@@ -16,9 +16,17 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
   useEffect(() => {
     if (!loading) {
+      console.log("[PROTECTED ROUTE] Access check:", {
+        isAuthenticated,
+        role: user?.role,
+        allowedRoles
+      });
+
       if (!isAuthenticated) {
+        console.log("[PROTECTED ROUTE] Redirecting to /login: Unauthenticated");
         router.push('/login');
       } else if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+        console.log("[PROTECTED ROUTE] Redirecting to /: Unauthorized role");
         router.push('/');
       }
     }

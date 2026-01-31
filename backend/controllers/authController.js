@@ -38,13 +38,16 @@ exports.login = async (req, res, next) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (!user) {
+            console.log(`[AUTH DEBUG] User not found: ${email}`);
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
         // Check if password matches
         const isMatch = await user.matchPassword(password);
+        console.log(`[AUTH DEBUG] Password comparison result for ${email}: ${isMatch}`);
 
         if (!isMatch) {
+            console.log(`[AUTH DEBUG] Password mismatch for: ${email}`);
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
@@ -75,6 +78,12 @@ const sendTokenResponse = (user, statusCode, res) => {
 
     res.status(statusCode).json({
         success: true,
-        token
+        token,
+        user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        }
     });
 };

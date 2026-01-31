@@ -1,32 +1,94 @@
+'use client';
+
 import Link from 'next/link';
 import { Building, ShieldCheck, Clock } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const { user, isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      switch (user.role) {
+        case 'admin':
+          router.push('/admin/dashboard');
+          break;
+        case 'owner':
+          router.push('/owner/dashboard');
+          break;
+        case 'tenant':
+          router.push('/tenant/dashboard');
+          break;
+      }
+    }
+  }, [isAuthenticated, user, loading, router]);
+
+  if (loading) {
+    return null; // Or a loading spinner
+  }
+
   return (
     <div className="space-y-16 py-8">
       {/* Hero Section */}
       <section className="text-center space-y-6">
         <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
-          Find Your Perfect <span className="text-blue-600">Rental Home</span>
+          Welcome to <span className="text-blue-600">Rental MS</span>
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Browse thousands of curated properties, from cozy apartments to luxury villas.
-          Manage your rentals with ease and security.
-        </p>
-        <div className="flex justify-center space-x-4">
-          <Link
-            href="/properties"
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg"
-          >
-            Browse Properties
-          </Link>
-          <Link
-            href="/register"
-            className="bg-white text-blue-600 border border-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition"
-          >
-            List Your Property
-          </Link>
-        </div>
+        {isAuthenticated && user ? (
+          <div className="space-y-4">
+            <p className="text-2xl font-semibold text-gray-800">
+              Hello, {user.name}!
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Link
+                href="/properties"
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg"
+              >
+                View Properties
+              </Link>
+              {user.role === 'admin' && (
+                <Link
+                  href="/admin"
+                  className="bg-gray-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-900 transition shadow-lg"
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+              {user.role === 'owner' && (
+                <Link
+                  href="/properties/add"
+                  className="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-lg"
+                >
+                  Add Property
+                </Link>
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Browse thousands of curated properties, from cozy apartments to luxury villas.
+              Manage your rentals with ease and security.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Link
+                href="/login"
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="bg-white text-blue-600 border border-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition"
+              >
+                Register
+              </Link>
+            </div>
+          </>
+        )}
       </section>
 
       {/* Features Section */}
@@ -58,20 +120,6 @@ export default function Home() {
             Our dedicated team is here to help you 24/7 with any questions or issues.
           </p>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-blue-600 rounded-2xl p-12 text-center text-white space-y-6">
-        <h2 className="text-3xl font-bold">Ready to find your next home?</h2>
-        <p className="text-blue-100 text-lg">
-          Join thousands of happy renters and owners today.
-        </p>
-        <Link
-          href="/register"
-          className="inline-block bg-white text-blue-600 px-10 py-3 rounded-lg font-bold hover:bg-gray-100 transition"
-        >
-          Get Started Now
-        </Link>
       </section>
     </div>
   );

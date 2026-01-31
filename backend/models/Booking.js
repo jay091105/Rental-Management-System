@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
-const bookingSchema = new mongoose.Schema({
-    property: {
+const rentalSchema = new mongoose.Schema({
+    item: {
         type: mongoose.Schema.ObjectId,
-        ref: 'Property',
+        ref: 'Item',
         required: true
     },
     user: {
@@ -19,17 +19,17 @@ const bookingSchema = new mongoose.Schema({
         type: Date,
         required: [true, 'Please add an end date']
     },
-    totalAmount: {
+    totalCost: {
         type: Number,
         required: true
     },
-    status: {
+    rentalStatus: {
         type: String,
-        enum: ['pending', 'confirmed', 'cancelled'],
+        enum: ['pending', 'approved', 'active', 'completed', 'cancelled'],
         default: 'pending'
     }
 }, {
     timestamps: true
 });
 
-module.exports = mongoose.model('Booking', bookingSchema);
+module.exports = mongoose.model('Rental', rentalSchema);

@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { Home, LogOut, User as UserIcon } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated, isAdmin } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <nav className="bg-white shadow-md">
@@ -26,24 +27,32 @@ const Navbar = () => {
                 <Link href="/bookings" className="text-gray-600 hover:text-blue-600 transition">
                   My Bookings
                 </Link>
-                {isAdmin && (
-                  <Link href="/admin" className="text-gray-600 hover:text-blue-600 transition">
+                {user?.role === 'admin' && (
+                  <Link href="/admin/dashboard" className="text-gray-600 hover:text-blue-600 transition">
                     Dashboard
                   </Link>
                 )}
-                <div className="flex items-center space-x-4 ml-4 pl-4 border-l border-gray-200">
-                  <div className="flex items-center space-x-2 text-gray-700">
-                    <UserIcon className="w-5 h-5" />
-                    <span className="font-medium">{user?.name}</span>
-                  </div>
-                  <button
-                    onClick={logout}
-                    className="flex items-center space-x-1 text-red-500 hover:text-red-700 transition"
-                  >
-                    <LogOut className="w-5 h-5" />
-                    <span>Logout</span>
-                  </button>
-                </div>
+                {user?.role === 'owner' && (
+                  <Link href="/owner/dashboard" className="text-gray-600 hover:text-blue-600 transition">
+                    Dashboard
+                  </Link>
+                )}
+                {user?.role === 'tenant' && (
+                  <Link href="/tenant/dashboard" className="text-gray-600 hover:text-blue-600 transition">
+                    Dashboard
+                  </Link>
+                )}
+                <Link href="/profile" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition">
+                  <UserIcon className="w-5 h-5" />
+                  <span className="font-medium">{user?.name}</span>
+                </Link>
+                <button
+                  onClick={logout}
+                  className="flex items-center space-x-1 text-red-500 hover:text-red-700 transition"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>Logout</span>
+                </button>
               </>
             ) : (
               <div className="flex items-center space-x-4">
