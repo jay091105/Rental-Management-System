@@ -1,6 +1,7 @@
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
+import { Toaster } from 'react-hot-toast';
 
 export const metadata = {
   title: 'Rental Management System',
@@ -17,9 +18,10 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <Navbar />
-          <main className="container mx-auto px-4 py-8">
+          <main>
             {children}
           </main>
+          <Toaster position="top-right" />
         </AuthProvider>
       </body>
     </html>

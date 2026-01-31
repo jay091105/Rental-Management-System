@@ -5,7 +5,9 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' }
+  role: { type: String, enum: ['CUSTOMER', 'VENDOR', 'ADMIN'], default: 'CUSTOMER' },
+  companyLogo: { type: String },
+  paymentQRCode: { type: String }
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {
