@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const redirectUser = (role: string) => {
-    let dashboardPath = '/products';
+    let dashboardPath = '/properties';
     switch (role) {
       case 'admin':
         dashboardPath = '/admin/dashboard';

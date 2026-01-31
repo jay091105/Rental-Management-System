@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rental Marketplace",
+  title: "Rentify | Rental Marketplace",
   description: "Easiest way to find and manage rental products and services",
 };
 
@@ -28,11 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen bg-surface-50`}
       >
         <AuthProvider>
           <Navbar />
-          <main>
+          <main className="flex-grow">
             {children}
           </main>
           <Toaster position="top-right" />

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { productService } from '@/services/api';
+import { propertyService } from '@/services/api';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
-export default function AddProductPage() {
+export default function AddPropertyPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -28,17 +28,17 @@ export default function AddProductPage() {
         ...formData,
         images: formData.imageURL ? [formData.imageURL] : []
       };
-      await productService.create(dataToSubmit);
-      router.push('/products');
+      await propertyService.create(dataToSubmit);
+      router.push('/properties');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || 'Failed to add product');
+      setError(error.response?.data?.message || 'Failed to add property');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: name === 'price' ? Number(value) : value });
   };
@@ -46,7 +46,7 @@ export default function AddProductPage() {
   return (
     <ProtectedRoute allowedRoles={['admin', 'provider']}>
       <div className="max-w-2xl mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-8">Add New Product</h1>
+        <h1 className="text-3xl font-bold mb-8">Add New Property</h1>
         
         {error && (
           <div className="mb-4 p-4 text-red-600 bg-red-50 border border-red-200 rounded-lg">
@@ -64,7 +64,7 @@ export default function AddProductPage() {
               value={formData.title}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Product Name"
+              placeholder="Property Title"
             />
           </div>
 
@@ -77,7 +77,7 @@ export default function AddProductPage() {
               value={formData.description}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Describe your product..."
+              placeholder="Describe your property..."
             />
           </div>
 
@@ -145,7 +145,7 @@ export default function AddProductPage() {
             disabled={isSubmitting}
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-md disabled:opacity-50"
           >
-            {isSubmitting ? 'Adding Product...' : 'Add Product'}
+            {isSubmitting ? 'Adding Property...' : 'Add Property'}
           </button>
         </form>
       </div>

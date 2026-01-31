@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { rentalService } from '@/services/api';
-import { Booking as Rental } from '@/types';
+import { Rental } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import { Calendar, Tag, CheckCircle, Clock, XCircle } from 'lucide-react';
@@ -66,7 +66,7 @@ export default function RentalsPage() {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-gray-900">{rental.product?.title || 'Unknown Product'}</h3>
+                    <h3 className="text-xl font-bold text-gray-900">{rental.product?.title || 'Unknown Property'}</h3>
                     <p className="text-gray-500 flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       {rental.startDate} - {rental.endDate}

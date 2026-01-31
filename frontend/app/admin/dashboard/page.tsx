@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { productService, rentalService, userService } from '@/services/api';
+import { propertyService, rentalService, userService } from '@/services/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ export default function AdminDashboard() {
 
   const [stats, setStats] = useState({
     users: 0,
-    products: 0,
+    properties: 0,
     rentals: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -22,14 +22,14 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [users, products, rentals] = await Promise.all([
+        const [users, properties, rentals] = await Promise.all([
           userService.getAll(),
-          productService.getAll(),
+          propertyService.getAll(),
           rentalService.getAll(),
         ]);
         setStats({
           users: users.length,
-          products: products.length,
+          properties: properties.length,
           rentals: rentals.length,
         });
       } catch (err) {
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
 
   const cards = [
     { title: 'Total Users', value: stats.users, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', link: '/admin/users' },
-    { title: 'Total Products', value: stats.products, icon: Package, color: 'text-green-600', bg: 'bg-green-50', link: '/products' },
+    { title: 'Total Properties', value: stats.properties, icon: Package, color: 'text-green-600', bg: 'bg-green-50', link: '/properties' },
     { title: 'Total Rentals', value: stats.rentals, icon: ClipboardList, color: 'text-purple-600', bg: 'bg-purple-50', link: '/admin/rentals' },
   ];
 

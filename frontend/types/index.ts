@@ -5,18 +5,29 @@ export interface User {
   role: 'admin' | 'provider' | 'renter';
 }
 
-export interface Product {
+export interface Property {
+  _id: string;
   id: string;
+  name: string;
   title: string;
   description: string;
   price: number;
+  pricePerHour: number;
+  pricePerDay: number;
+  pricePerMonth: number;
   category: string;
   location: string;
   images: string[];
+  photos: string[];
+  brandName: string;
+  colour: string;
   ownerId: string;
   status: 'available' | 'rented';
   averageRating?: number;
   numOfReviews?: number;
+  availableUnits: number;
+  deliveryCharges: number;
+  deposit: number;
 }
 
 export interface Review {
@@ -39,7 +50,7 @@ export interface Rental {
   endDate: string;
   status: 'pending' | 'confirmed' | 'cancelled';
   totalPrice: number;
-  product?: Product;
+  product?: Property;
   renter?: User;
 }
 

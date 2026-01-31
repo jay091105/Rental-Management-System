@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { rentalService } from '@/services/api';
-import { Booking as Rental } from '@/types';
+import { Rental } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import { ClipboardList, Check, X, Calendar, User, Package } from 'lucide-react';
@@ -51,7 +51,7 @@ export default function AdminRentalsPage() {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-bold border-b border-gray-100">
               <tr>
-                <th className="px-6 py-4">Product</th>
+                <th className="px-6 py-4">Property</th>
                 <th className="px-6 py-4">Renter</th>
                 <th className="px-6 py-4">Dates</th>
                 <th className="px-6 py-4">Status</th>

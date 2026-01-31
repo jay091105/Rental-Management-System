@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { productService, rentalService } from '@/services/api';
+import { propertyService, rentalService } from '@/services/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ export default function ProviderDashboard() {
 
   const { user } = useAuth();
   const [stats, setStats] = useState({
-    products: 0,
+    properties: 0,
     rentals: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -24,14 +24,14 @@ export default function ProviderDashboard() {
     const fetchStats = async () => {
       try {
         // In a real app, these would be filtered by providerId on the backend
-        const [products, rentals] = await Promise.all([
-          productService.getAll(),
+        const [properties, rentals] = await Promise.all([
+          propertyService.getAll(),
           rentalService.getAll(),
         ]);
         
         // Simulating filtering for demonstration
         setStats({
-          products: products.length,
+          properties: properties.length,
           rentals: rentals.length,
         });
       } catch (err) {
@@ -46,7 +46,7 @@ export default function ProviderDashboard() {
   if (loading) return <Loading />;
 
   const cards = [
-    { title: 'My Products', value: stats.products, icon: Package, color: 'text-green-600', bg: 'bg-green-50', link: '/products' },
+    { title: 'My Properties', value: stats.properties, icon: Package, color: 'text-green-600', bg: 'bg-green-50', link: '/properties' },
     { title: 'Rental Requests', value: stats.rentals, icon: ClipboardList, color: 'text-purple-600', bg: 'bg-purple-50', link: '/admin/rentals' },
   ];
 
@@ -61,11 +61,11 @@ export default function ProviderDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Provider Overview</h1>
           </div>
           <Link
-            href="/products/add"
+            href="/properties/add"
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           >
             <Plus className="w-5 h-5" />
-            Add Product
+            Add Property
           </Link>
         </div>
 

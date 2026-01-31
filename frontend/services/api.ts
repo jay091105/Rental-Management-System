@@ -1,21 +1,21 @@
 import api from '../lib/axios';
-import { Product, Rental, User } from '../types';
+import { Property, Rental, User } from '../types';
 
-export const productService = {
+export const propertyService = {
   getAll: async (params?: Record<string, string | number>) => {
-    const response = await api.get<{ data: Product[] }>('/products', { params });
+    const response = await api.get<{ data: Property[] }>('/products', { params });
     return response.data.data;
   },
   getById: async (id: string) => {
-    const response = await api.get<{ data: Product }>(`/products/${id}`);
+    const response = await api.get<{ data: Property }>(`/products/${id}`);
     return response.data.data;
   },
-  create: async (data: Partial<Product>) => {
-    const response = await api.post<{ data: Product }>('/products', data);
+  create: async (data: Partial<Property>) => {
+    const response = await api.post<{ data: Property }>('/products', data);
     return response.data.data;
   },
-  update: async (id: string, data: Partial<Product>) => {
-    const response = await api.put<{ data: Product }>(`/products/${id}`, data);
+  update: async (id: string, data: Partial<Property>) => {
+    const response = await api.put<{ data: Property }>(`/products/${id}`, data);
     return response.data.data;
   },
   delete: async (id: string) => {
@@ -54,7 +54,7 @@ export const reviewService = {
     const response = await api.post('/reviews', data);
     return response.data;
   },
-  getProductReviews: async (productId: string) => {
+  getPropertyReviews: async (productId: string) => {
     const response = await api.get(`/reviews/product/${productId}`);
     return response.data;
   },

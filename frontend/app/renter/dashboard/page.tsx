@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { productService, rentalService } from '@/services/api';
+import { propertyService, rentalService } from '@/services/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ export default function RenterDashboard() {
   }, []);
 
   const [stats, setStats] = useState({
-    availableProducts: 0,
+    availableProperties: 0,
     myRentals: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -21,13 +21,13 @@ export default function RenterDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [products, rentals] = await Promise.all([
-          productService.getAll(),
+        const [properties, rentals] = await Promise.all([
+          propertyService.getAll(),
           rentalService.getAll(),
         ]);
         
         setStats({
-          availableProducts: products.length,
+          availableProperties: properties.length,
           myRentals: rentals.length,
         });
       } catch (err) {
@@ -42,7 +42,7 @@ export default function RenterDashboard() {
   if (loading) return <Loading />;
 
   const cards = [
-    { title: 'Available Products', value: stats.availableProducts, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50', link: '/products' },
+    { title: 'Available Properties', value: stats.availableProperties, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50', link: '/properties' },
     { title: 'My Rentals', value: stats.myRentals, icon: ClipboardList, color: 'text-purple-600', bg: 'bg-purple-50', link: '/admin/rentals' },
   ];
 
@@ -57,11 +57,11 @@ export default function RenterDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Renter Overview</h1>
           </div>
           <Link
-            href="/products"
+            href="/properties"
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           >
             <Search className="w-5 h-5" />
-            Browse Products
+            Browse Properties
           </Link>
         </div>
 
