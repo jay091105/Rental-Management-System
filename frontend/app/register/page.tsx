@@ -9,8 +9,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
-    role: 'tenant',
+    password: ''
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,12 +30,11 @@ export default function RegisterPage() {
     console.log("[REGISTER] Payload:", { 
       name: formData.name, 
       email: formData.email, 
-      role: formData.role,
       password: '***' 
     });
 
     // Client-side validation
-    if (!formData.name || !formData.email || !formData.password || !formData.role) {
+    if (!formData.name || !formData.email || !formData.password) {
       console.log("[REGISTER] Validation failed: Missing fields");
       setError('All fields are required');
       return;
