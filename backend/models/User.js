@@ -25,6 +25,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['admin', 'provider', 'renter'],
         default: 'renter'
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    deletedAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true

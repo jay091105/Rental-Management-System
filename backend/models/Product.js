@@ -107,6 +107,14 @@ const productSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'User',
         required: true
+    },
+    ownerActive: {
+        type: Boolean,
+        default: true
+    },
+    ownerDisabledAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true

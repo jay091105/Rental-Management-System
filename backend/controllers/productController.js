@@ -15,6 +15,11 @@ exports.getProducts = async (req, res, next) => {
             reqQuery.published = true;
         }
 
+        // Default: exclude products whose owner is inactive (providers that were deactivated/deleted)
+        if (!reqQuery.hasOwnProperty('ownerActive')) {
+            reqQuery.ownerActive = true;
+        }
+
         // Default: only include products with available units > 0 unless caller provided a filter
         // This ensures renters only see bookable items by default
         const hasAvailabilityFilter = Object.keys(reqQuery).some(k => k === 'availableUnits' || k.startsWith('availableUnits['));
@@ -111,6 +116,13 @@ exports.getProduct = async (req, res, next) => {
                 return res.status(404).json({ success: false, message: 'Product not found' });
             }
             if (product.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+                return res.status(404).json({ success: false, message: 'Product not found' });
+            }
+        }
+
+        // If the product's owner has been deactivated or deleted, hide from non-admin callers
+        if (product.ownerActive === false) {
+            if (!req.user || req.user.role !== 'admin') {
                 return res.status(404).json({ success: false, message: 'Product not found' });
             }
         }

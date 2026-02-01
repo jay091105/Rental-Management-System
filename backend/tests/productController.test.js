@@ -69,7 +69,7 @@ describe('productController.createProduct validation', () => {
 
     await productController.getProducts(req2, res2);
 
-    expect(Product.find).toHaveBeenCalledWith(expect.objectContaining({ published: true, availableUnits: { $gt: 0 } }));
+    expect(Product.find).toHaveBeenCalledWith(expect.objectContaining({ published: true, availableUnits: { $gt: 0 }, ownerActive: true }));
     expect(res2.status).toHaveBeenCalledWith(200);
   });
 

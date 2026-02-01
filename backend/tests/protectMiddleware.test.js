@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const { protect } = require('../middleware/auth');
+const User = require('../models/User');
 
 jest.mock('jsonwebtoken');
+jest.mock('../models/User');
 
 describe('protect middleware', () => {
   let req;
@@ -33,6 +35,18 @@ describe('protect middleware', () => {
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false, code: 'TOKEN_EXPIRED' }));
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test('returns 403 when account is deactivated', async () => {
+    req = { headers: { authorization: 'Bearer valid.token' } };
+    jwt.verify.mockReturnValue({ id: 'u1' });
+    User.findById = jest.fn().mockResolvedValue({ _id: 'u1', isActive: false });
+
+    await protect(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false, message: 'Account deactivated' }));
     expect(next).not.toHaveBeenCalled();
   });
 });

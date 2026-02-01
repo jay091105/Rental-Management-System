@@ -48,6 +48,11 @@ exports.protect = async (req, res, next) => {
 
         req.user = await User.findById(decoded.id);
 
+        // Block requests from deactivated accounts
+        if (req.user && req.user.isActive === false) {
+            return res.status(403).json({ success: false, message: 'Account deactivated' });
+        }
+
         next();
     } catch (err) {
         // Handle expired token specifically
