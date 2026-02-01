@@ -186,6 +186,50 @@ export default function ProviderOrdersPage() {
                         >Reject</button>
                       </>
                     )}
+
+                    {o.status === 'confirmed' && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Mark this order as picked up?')) return;
+                          try {
+                            const res = await (await import('@/services/api')).orderService.markPickup(o._id);
+                            if (res?.success) {
+                              o.status = 'picked_up';
+                              setOrders((prev) => prev.map(p => p._id === o._id ? { ...p, status: 'picked_up' } : p));
+                              (await import('react-hot-toast')).toast.success('Marked as picked up');
+                            } else {
+                              (await import('react-hot-toast')).toast.error(res?.message || 'Failed to mark picked up');
+                            }
+                          } catch (err: any) {
+                            console.error(err);
+                            (await import('react-hot-toast')).toast.error(err?.response?.data?.message || 'Failed to mark picked up');
+                          }
+                        }}
+                        className="text-sm bg-indigo-600 text-white px-3 py-1 rounded-lg"
+                      >Mark Picked Up</button>
+                    )}
+
+                    {o.status === 'picked_up' && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Mark this order as returned?')) return;
+                          try {
+                            const res = await (await import('@/services/api')).orderService.markReturn(o._id);
+                            if (res?.success) {
+                              o.status = 'returned';
+                              setOrders((prev) => prev.map(p => p._id === o._id ? { ...p, status: 'returned' } : p));
+                              (await import('react-hot-toast')).toast.success('Marked as returned');
+                            } else {
+                              (await import('react-hot-toast')).toast.error(res?.message || 'Failed to mark returned');
+                            }
+                          } catch (err: any) {
+                            console.error(err);
+                            (await import('react-hot-toast')).toast.error(err?.response?.data?.message || 'Failed to mark returned');
+                          }
+                        }}
+                        className="text-sm bg-rose-600 text-white px-3 py-1 rounded-lg"
+                      >Mark Returned</button>
+                    )}
                   </div>
                 </div>
               </div>

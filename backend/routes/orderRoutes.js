@@ -12,4 +12,8 @@ router.get('/:id/stream', orderController.streamOrder);
 router.get('/:id', orderController.getOrder);
 router.patch('/:id/status', orderController.updateStatus);
 
+// Provider actions: pickup / return
+router.post('/:id/pickup', orderController.markPickup);
+router.post('/:id/return', orderController.markReturn);
+
 module.exports = router;

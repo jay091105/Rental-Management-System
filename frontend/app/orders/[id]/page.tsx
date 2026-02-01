@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Loading from '@/components/Loading';
 import { orderService } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function OrderDetailPage() {
@@ -13,6 +14,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     let es: EventSource | null = null;
@@ -115,7 +117,7 @@ export default function OrderDetailPage() {
                 className="bg-gray-100 text-sm px-3 py-2 rounded"
               >Refresh</button>
 
-              {order.status === 'pending' && (
+              {user && (user.role === 'provider' || user.role === 'admin') && order.status === 'pending' && (
                 <div className="flex gap-3">
                   <button
                     disabled={actionLoading}
@@ -165,6 +167,62 @@ export default function OrderDetailPage() {
                     }}
                     className="bg-red-600 text-white px-4 py-2 rounded-lg"
                   >Reject</button>
+                </div>
+              )}
+
+              {user && (user.role === 'provider' || user.role === 'admin') && order.status === 'confirmed' && (
+                <div className="flex gap-3">
+                  <button
+                    disabled={actionLoading}
+                    onClick={async () => {
+                      if (!confirm('Mark as picked up?')) return;
+                      setActionLoading(true);
+                      try {
+                        const res = await orderService.markPickup(order._id);
+                        if (res?.success) {
+                          const updated = res.data?.order || res.data || res;
+                          setOrder((prev: any) => ({ ...prev, ...updated, status: 'picked_up' }));
+                          toast.success('Marked as picked up');
+                        } else {
+                          toast.error(res?.message || 'Failed to mark picked up');
+                        }
+                      } catch (err: any) {
+                        console.error(err);
+                        toast.error(err?.response?.data?.message || 'Failed to mark picked up');
+                      } finally {
+                        setActionLoading(false);
+                      }
+                    }}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+                  >Mark Picked Up</button>
+                </div>
+              )}
+
+              {user && (user.role === 'provider' || user.role === 'admin') && order.status === 'picked_up' && (
+                <div className="flex gap-3">
+                  <button
+                    disabled={actionLoading}
+                    onClick={async () => {
+                      if (!confirm('Mark as returned?')) return;
+                      setActionLoading(true);
+                      try {
+                        const res = await orderService.markReturn(order._id);
+                        if (res?.success) {
+                          const updated = res.data?.order || res.data || res;
+                          setOrder((prev: any) => ({ ...prev, ...updated, status: updated.status || 'returned' }));
+                          toast.success('Marked as returned');
+                        } else {
+                          toast.error(res?.message || 'Failed to mark returned');
+                        }
+                      } catch (err: any) {
+                        console.error(err);
+                        toast.error(err?.response?.data?.message || 'Failed to mark returned');
+                      } finally {
+                        setActionLoading(false);
+                      }
+                    }}
+                    className="bg-rose-600 text-white px-4 py-2 rounded-lg"
+                  >Mark Returned</button>
                 </div>
               )}
             </div>

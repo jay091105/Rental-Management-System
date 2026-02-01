@@ -4,6 +4,8 @@ const Product = require('../models/Product');
 
 jest.mock('../models/Order');
 jest.mock('../models/Product');
+jest.mock('../models/Pickup');
+jest.mock('../models/Return');
 
 describe('orderController.createOrder', () => {
   let req, res;
@@ -117,5 +119,76 @@ describe('orderController.createOrder', () => {
     await orderController.createOrder(req, res);
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, data: expect.objectContaining({ _id: 'o-new' }) }));
+  });
+
+  test('confirming an order auto-creates a Pickup', async () => {
+    const orderDoc = { _id: 'oC', status: 'pending', provider: 'prov1', meta: { rentalStart: '2026-06-01' }, save: jest.fn().mockResolvedValue(true), toObject: function() { return this; } };
+    Order.findById = jest.fn().mockResolvedValue(orderDoc);
+
+    // ensure no existing pickup
+    const Pickup = require('../models/Pickup');
+    Pickup.findOne = jest.fn().mockResolvedValue(null);
+    Pickup.create = jest.fn().mockResolvedValue({ _id: 'pC', order: 'oC' });
+
+    const req = { params: { id: 'oC' }, body: { status: 'confirmed' }, user: { id: 'prov1', role: 'provider' } };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    await orderController.updateStatus(req, res);
+    expect(Pickup.create).toHaveBeenCalledWith(expect.objectContaining({ order: 'oC' }));
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test('provider can mark an order as picked up', async () => {
+    const orderDoc = { _id: 'oP', provider: 'provP', product: { _id: 'prod1' }, meta: { quantity: 2 }, statusHistory: [], save: jest.fn().mockResolvedValue(true), toObject: function() { return this; } };
+    Order.findById = jest.fn().mockResolvedValue(orderDoc);
+
+    const Pickup = require('../models/Pickup');
+    Pickup.findOne = jest.fn().mockResolvedValue(null);
+    Pickup.create = jest.fn().mockResolvedValue({ _id: 'pk1', order: 'oP', pickedAt: new Date() });
+
+    const req = { params: { id: 'oP' }, user: { id: 'provP', role: 'provider' } };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    await orderController.markPickup(req, res);
+    expect(Pickup.create).toHaveBeenCalled();
+    expect(orderDoc.status).toBe('picked_up');
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test('provider marks return — late fee calculated and stock restored', async () => {
+    const now = new Date('2026-07-10T00:00:00Z');
+    jest.useFakeTimers().setSystemTime(now);
+
+    const orderDoc = {
+      _id: 'oR',
+      provider: 'provR',
+      product: { _id: 'prodR' },
+      meta: { rentalStart: '2026-07-01', rentalEnd: '2026-07-05', quantity: 1 },
+      items: [{ price: 100 }],
+      totalAmount: 400,
+      statusHistory: [],
+      financial: {},
+      save: jest.fn().mockResolvedValue(true),
+      toObject: function() { return this; }
+    };
+    Order.findById = jest.fn().mockResolvedValue(orderDoc);
+
+    const Return = require('../models/Return');
+    Return.create = jest.fn().mockResolvedValue({ _id: 'ret1', lateFee: 300 });
+
+    const Product = require('../models/Product');
+    Product.findByIdAndUpdate = jest.fn().mockResolvedValue(true);
+
+    const req = { params: { id: 'oR' }, user: { id: 'provR', role: 'provider' }, body: {} };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    await orderController.markReturn(req, res);
+
+    expect(Return.create).toHaveBeenCalled();
+    expect(Product.findByIdAndUpdate).toHaveBeenCalledWith('prodR', expect.objectContaining({ $inc: { availableUnits: 1 } }));
+    expect(orderDoc.financial.lateFee).toBeGreaterThanOrEqual(0);
+    expect(orderDoc.status).toBe('late');
+    expect(res.status).toHaveBeenCalledWith(200);
+    jest.useRealTimers();
   });
 });

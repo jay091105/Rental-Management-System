@@ -127,6 +127,14 @@ export const orderService = {
   updateStatus: async (id: string, status: string) => {
     const response = await api.patch(`/orders/${id}/status`, { status });
     return response.data;
+  },
+  markPickup: async (id: string) => {
+    const response = await api.post(`/orders/${id}/pickup`);
+    return response.data;
+  },
+  markReturn: async (id: string, body?: { returnedAt?: string }) => {
+    const response = await api.post(`/orders/${id}/return`, body || {});
+    return response.data;
   }
 };
 
