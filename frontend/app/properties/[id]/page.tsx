@@ -270,194 +270,103 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            <div className="p-8 lg:p-10 flex flex-col h-full">
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700">
-                    {product?.category}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-yellow-500">
+            <div className="p-6 lg:p-10 flex flex-col gap-8">
+              {/* Header: meta, title, location */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">{product?.category}</span>
+                    <div className="flex items-center gap-2 text-yellow-500">
                       <Star className="w-4 h-4 fill-current" />
-                      <span className="text-sm font-bold text-gray-900">
-                        {product?.averageRating || 0}
-                      </span>
-                      <span className="text-xs text-gray-400 font-medium">
-                        ({product?.numOfReviews || 0} reviews)
-                      </span>
+                      <span className="text-sm font-bold text-gray-900">{product?.averageRating || 0}</span>
+                      <span className="text-xs text-gray-400">({product?.numOfReviews || 0})</span>
                     </div>
-
-                    {(user && (user.role === 'admin' || product?.owner === user._id || product?.owner?.toString?.() === user._id || product?.ownerId === user._id)) && (
-                      <Link href={`/properties/${id}/edit`} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 text-sm font-medium">
-                        Edit
-                      </Link>
-                    )}
                   </div>
+
+                  {(user && (user.role === 'admin' || product?.owner === user._id || product?.owner?.toString?.() === user._id || product?.ownerId === user._id)) && (
+                    <Link href={`/properties/${id}/edit`} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 text-sm font-medium">Edit</Link>
+                  )}
                 </div>
 
-                <h1 className="text-4xl font-extrabold text-gray-900 mb-2 leading-tight">
-                  {product.title}
-                </h1>
-                <p className="text-lg text-gray-500 font-medium mb-6">{product.brandName}</p>
+                <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">{product.title}</h1>
+                <p className="text-sm text-gray-500 mt-2">{product.brandName} • <span className="font-medium">{product?.location}</span></p>
+              </div>
 
-                <div className="flex items-center gap-2 text-gray-600 mb-8">
-                  <MapPin size={18} className="text-blue-500" />
-                  <span className="font-medium">{product?.location}</span>
-                </div>
-
-                <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100/50 mb-8">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">
-                        Select Plan
-                      </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {['HOUR', 'DAY', 'MONTH'].map((dur: string) => (
-                          <button
-                            key={dur}
-                            onClick={() => setRentalDuration(dur as 'HOUR' | 'DAY' | 'MONTH')}
-                            className={`py-2 px-4 rounded-xl text-sm font-bold transition-all ${
-                              rentalDuration === dur
-                                ? 'bg-blue-600 text-white shadow-lg'
-                                : 'bg-white text-gray-600 hover:bg-gray-50'
-                            }`}
-                          >
-                            {dur.charAt(0) + dur.slice(1).toLowerCase()}ly
-                          </button>
-                        ))}
+              {/* Right-hand sticky summary (visual lift to match inspiration) */}
+              <div className="lg:col-start-2 lg:row-start-1">
+                <div className="sticky top-28">
+                  <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-lg w-full max-w-md">
+                    <div className="flex items-start justify-between gap-6">
+                      <div>
+                        <div className="text-sm text-gray-500">Price</div>
+                        <div className="text-3xl font-extrabold text-gray-900 mt-1">₹{Number(price || 0).toLocaleString()}</div>
+                        <div className="text-sm text-gray-400">per {rentalDuration.toLowerCase()}</div>
+                        <div className="mt-2 inline-flex items-center gap-2 text-sm text-emerald-600 font-semibold">
+                          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
+                          {((availability ?? product.availableUnits) || 0) > 0 ? `${availability ?? product.availableUnits} available` : 'Out of stock'}
+                        </div>
+                      </div>
+                      <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
+                        {product.images?.[0] && (
+                          <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover" />
+                        )}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="mt-6 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <label className="text-xs font-medium text-gray-500">Start</label>
+                        <label className="text-xs font-medium text-gray-500">End</label>
+                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} min={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm" />
+                        <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={startDate} className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm" />
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-xs text-gray-500">Quantity</div>
+                          <div className="mt-2 flex items-center gap-2">
+                            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center">-</button>
+                            <div className="w-12 text-center font-bold">{quantity}</div>
+                            <button onClick={() => setQuantity(Math.min((availability ?? product!.availableUnits), quantity + 1))} className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center">+</button>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500">Estimated total</div>
+                          <div className="text-lg font-bold text-blue-700">₹{totalPrice}</div>
+                        </div>
+                      </div>
+
                       <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                          Start
-                        </label>
-                        <input
-                          type="date"
-                          value={startDate}
-                          onChange={(e) => setStartDate(e.target.value)}
-                          min={new Date().toISOString().split('T')[0]}
-                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">
-                          End
-                        </label>
-                        <input
-                          type="date"
-                          value={endDate}
-                          onChange={(e) => setEndDate(e.target.value)}
-                          min={startDate}
-                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium"
-                        />
-                      </div>
-                    </div>
-                    {(!startDate || !endDate || new Date(startDate) > new Date(endDate)) && (
-                      <p className="text-sm text-red-500 mt-2">Please select valid start and end dates (start must be on or before end).</p>
-                    )}
-
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Quantity
-                        </label>
-                        <span className="text-xs text-blue-600 font-medium">
-                          {availability ?? product.availableUnits} available
-                        </span>
-                      </div>
-
-                      {availability !== null && (
-                        <p className="text-sm text-gray-500 mt-2">Showing availability for selected dates</p>
-                      )}
-
-                      <div className="mt-2 flex items-center gap-3">
-                        <button
-                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                        >
-                          <Minus size={16} />
-                        </button>
-                        <span className="flex-1 text-center font-bold text-gray-900">{quantity}</span>
-                        <button
-                          onClick={() => setQuantity(Math.min((availability ?? product!.availableUnits), quantity + 1))}
-                          disabled={quantity >= ((availability ?? product?.availableUnits) || 0)}
-                          className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors disabled:opacity-50"
-                        >
-                          <Plus size={16} />
+                        <button onClick={addToCart} disabled={rentalLoading || ((availability ?? product?.availableUnits) || 0) === 0 || !startDate || !endDate || new Date(startDate) > new Date(endDate) || quantity > ((availability ?? product?.availableUnits) || 0)} className="w-full bg-blue-600 text-white py-3 rounded-2xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-all flex items-center justify-center gap-3">
+                          <ShoppingCart size={18} />
+                          {rentalLoading ? 'Processing…' : 'Rent Now'}
                         </button>
                       </div>
 
-                      {availability !== null && quantity > (availability || 0) && (
-                        <p className="text-sm text-red-500 mt-2">Requested quantity exceeds availability for the selected dates.</p>
-                      )}
+                      <div className="mt-3 text-center text-xs text-gray-400">You won't be charged yet — provider will confirm availability.</div>
+                    </div>
+
+                    <div className="mt-6 border-t border-gray-100 pt-4 text-sm text-gray-600 space-y-2">
+                      <div className="flex items-center justify-between"><span>Deposit</span><span className="font-medium">₹{product?.deposit || 0}</span></div>
+                      <div className="flex items-center justify-between"><span>Delivery</span><span className="font-medium">₹{product?.deliveryCharges || 0}</span></div>
                     </div>
                   </div>
                 </div>
-
-                <div className="space-y-3 px-2 mb-8">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Base Rate</span>
-                    <span className="font-medium">
-                      {price && Number(price) > 0 ? (
-                        <>
-                          {'₹'}{Number(price).toLocaleString(undefined, { maximumFractionDigits: 2 })}/{rentalDuration.toLowerCase()}
-                        </>
-                      ) : (
-                        'Contact'
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Deposit (Refundable)</span>
-                    <span className="font-medium">₹{product?.deposit || 0}</span>
-                  </div>
-                  <div className="pt-3 border-t border-gray-100 flex justify-between items-end">
-                    <span className="text-lg font-bold text-gray-900">Total</span>
-                    <div className="text-right">
-                      <span className="block text-3xl font-extrabold text-blue-700 leading-none">
-                        ₹{totalPrice}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={addToCart}
-                  disabled={
-                    rentalLoading ||
-                    ((availability ?? product?.availableUnits) || 0) === 0 ||
-                    !startDate ||
-                    !endDate ||
-                    new Date(startDate) > new Date(endDate) ||
-                    quantity > ((availability ?? product?.availableUnits) || 0)
-                  }
-                  className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <ShoppingCart size={20} />
-                  {rentalLoading ? 'Processing...' : 'Rent Now'}
-                </button>
               </div>
 
               <div className="mt-auto grid grid-cols-1 md:grid-cols-3 gap-4 pt-8 border-t border-gray-100">
                 <div className="flex items-center gap-3">
                   <Shield size={20} className="text-emerald-500" />
-                  <span className="text-xs font-bold text-gray-600 uppercase tracking-tighter">
-                    Verified
-                  </span>
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-tighter">Verified</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Truck size={20} className="text-blue-500" />
-                  <span className="text-xs font-bold text-gray-600 uppercase tracking-tighter">
-                    Fast Delivery
-                  </span>
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-tighter">Fast Delivery</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle2 size={20} className="text-purple-500" />
-                  <span className="text-xs font-bold text-gray-600 uppercase tracking-tighter">
-                    Quality Check
-                  </span>
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-tighter">Quality Check</span>
                 </div>
               </div>
             </div>
