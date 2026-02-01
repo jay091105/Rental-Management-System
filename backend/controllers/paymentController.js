@@ -124,8 +124,10 @@ exports.mockPayment = async (req, res, next) => {
             await payment.save();
 
             // Update rental state
+            let createdOrder = null;
+            let createdInvoice = null;
             if (payment.rental) {
-                const rental = await Rental.findById(payment.rental._id || payment.rental).populate('product');
+                const rental = await Rental.findById(payment.rental._id || payment.rental).populate('product user');
                 if (rental) {
                     rental.payment = payment._id;
                     rental.paymentRequired = false;
@@ -134,6 +136,85 @@ exports.mockPayment = async (req, res, next) => {
                         rental.rentalStatus = 'active';
                     }
                     await rental.save();
+
+                    // Ensure there's an Order for this rental so provider sees it
+                    const Order = require('../models/Order');
+                    const Product = require('../models/Product');
+                    const User = require('../models/User');
+
+                    // try to find existing order linked to this rental
+                    let order = await Order.findOne({ rental: rental._id });
+                    if (!order) {
+                        const product = await Product.findById(rental.product._id || rental.product);
+                        order = await Order.create({
+                            renter: rental.user._id || rental.user,
+                            provider: product.owner,
+                            product: product._id,
+                            rental: rental._id,
+                        items: [{
+                          productSnapshot: {
+                            title: product.title,
+                            id: product._id,
+                            images: product.images || product.photos || []
+                          },
+                          quantity: rental.quantity || 1,
+                          price: rental.totalCost
+                        }],
+                        totalAmount: rental.totalCost,
+                        status: 'pending',
+                        notes: 'Auto-created from rental payment',
+                        meta: {
+                          rentalStart: rental.startDate,
+                          rentalEnd: rental.endDate,
+                          quantity: rental.quantity || 1,
+                          rentalId: rental._id
+                        }
+                    });
+                    }
+                    createdOrder = order;
+
+                    // Create an invoice for the order if one doesn't exist
+                    const Invoice = require('../models/Invoice');
+                    let invoice = await Invoice.findOne({ order: order._id });
+                    if (!invoice) {
+                        const renterUser = await User.findById(order.renter);
+                        const providerUser = await User.findById(order.provider);
+                        invoice = await Invoice.create({
+                            order: order._id,
+                            amount: order.totalAmount,
+                            status: 'issued',
+                            issuedAt: new Date(),
+                            meta: {
+                                orderId: order._id.toString(),
+                                customerName: renterUser?.name || null,
+                                vendorName: providerUser?.name || null,
+                                productName: rental.product?.title || (order.items?.[0]?.productSnapshot?.title) || null,
+                                rentalStart: rental.startDate,
+                                rentalEnd: rental.endDate,
+                                quantity: rental.quantity || 1,
+                                priceBreakdown: {
+                                  rentalTotal: rental.totalCost
+                                }
+                            }
+                        });
+                    }
+                    createdInvoice = invoice;
+
+                    // Create a simple DB notification for provider
+                    try {
+                        const Notification = require('../models/Notification');
+                        const providerUser = await User.findById(order.provider);
+                        await Notification.create({
+                            user: order.provider,
+                            type: 'order_created',
+                            message: `New order ${order._id} — invoice ${createdInvoice?._id || ''}`,
+                            meta: { order: order._id, invoice: createdInvoice?._id }
+                        });
+                        // Also console-log so devs see the notification in logs
+                        console.log('Notification created for provider', providerUser?._id);
+                    } catch (nErr) {
+                        console.warn('Failed to create notification:', nErr?.message || nErr);
+                    }
                 }
             }
 
@@ -147,7 +228,8 @@ exports.mockPayment = async (req, res, next) => {
                 }
             }
 
-            return res.status(200).json({ success: true, data: payment });
+            // Return payment and any auto-created order/invoice for client to act on
+            return res.status(200).json({ success: true, data: { payment, order: createdOrder, invoice: createdInvoice } });
         }
 
         payment.status = 'failed';

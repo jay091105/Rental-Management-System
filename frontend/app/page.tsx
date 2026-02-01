@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { isLikelyImageUrl, normalizeImageSrc } from '@/lib/image';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -210,13 +211,21 @@ export default function Home() {
                 <div key={product._id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
                   <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
                     {product.photos && product.photos.length > 0 ? (
-                      <Image
-                        src={`http://localhost:5000${product.photos[0]}`}
-                        alt={product.name}
-                        fill
-                        sizes="100%"
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
+                      (() => {
+                        const raw = product.photos[0];
+                        // prefer absolute URLs from API; if API returned a relative path, keep localhost prefix
+                        const candidate = /^https?:\/\//i.test(raw) ? raw : `http://localhost:5000${raw}`;
+                        const safe = isLikelyImageUrl(candidate) ? (normalizeImageSrc(candidate) ?? candidate) : '/file.svg';
+                        return (
+                          <Image
+                            src={safe}
+                            alt={product.name}
+                            fill
+                            sizes="100%"
+                            className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          />
+                        );
+                      })()
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
                         <span className="text-sm font-medium">No Image Available</span>

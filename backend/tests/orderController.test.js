@@ -12,6 +12,7 @@ describe('orderController.createOrder', () => {
     res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
     Product.findById.mockReset();
     Order.create.mockReset();
+    Order.findById && Order.findById.mockReset && Order.findById.mockReset();
   });
 
   test('requires productId', async () => {
@@ -24,5 +25,97 @@ describe('orderController.createOrder', () => {
     Product.findById.mockResolvedValue(null);
     await orderController.createOrder(req, res);
     expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  test('getProviderOrders returns rental/order metadata', async () => {
+    const mockOrder = { _id: 'o1', product: { title: 'Drill' }, totalAmount: 100, status: 'pending', meta: { rentalStart: '2026-03-01', rentalEnd: '2026-03-03', quantity: 2 }, renter: { name: 'Renter' }, rental: { startDate: '2026-03-01', endDate: '2026-03-03', quantity: 2 } };
+    Order.find.mockResolvedValue([mockOrder]);
+    const req2 = { user: { id: 'prov1' } };
+    const res2 = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    await orderController.getProviderOrders(req2, res2);
+    expect(res2.status).toHaveBeenCalledWith(200);
+    expect(res2.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, data: expect.any(Array) }));
+  });
+
+  test('includes orders where product.owner matches provider even if order.provider is missing', async () => {
+    // Simulate one order without provider but with product owned by provider
+    const orphanOrder = { _id: 'o-orphan', provider: null, product: { _id: 'p-orphan', owner: 'provZ', title: 'Camera' }, totalAmount: 250 };
+    // Product.find should return the product id owned by provider
+    Product.find.mockResolvedValue([{ _id: 'p-orphan' }]);
+    // Order.find should return the orphanOrder when called by controller (we mock it directly)
+    Order.find.mockResolvedValue([orphanOrder]);
+
+    const req3 = { user: { id: 'provZ' } };
+    const res3 = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    await orderController.getProviderOrders(req3, res3);
+
+    expect(res3.status).toHaveBeenCalledWith(200);
+    expect(res3.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, data: expect.arrayContaining([expect.objectContaining({ _id: 'o-orphan' })]) }));
+  });
+
+  test('getOrder allows provider to fetch their order and returns timeline', async () => {
+    const mockOrder = { _id: 'oX', product: { title: 'Saw' }, provider: { _id: 'provX' }, renter: { name: 'Renter' }, totalAmount: 50, createdAt: new Date('2026-01-01T00:00:00Z'), statusHistory: [{ status: 'confirmed', at: new Date('2026-01-02T00:00:00Z'), by: 'provX' }] };
+    Order.findById = jest.fn().mockResolvedValue(mockOrder);
+    const req3 = { params: { id: 'oX' }, user: { id: 'provX', role: 'provider' } };
+    const res3 = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    await orderController.getOrder(req3, res3);
+    expect(Order.findById).toHaveBeenCalledWith('oX');
+    expect(res3.status).toHaveBeenCalledWith(200);
+    expect(res3.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, data: expect.objectContaining({ _id: 'oX', timeline: expect.any(Array) }) }));
+  });
+
+  test('updateStatus appends to statusHistory when changing status', async () => {
+    const orderDoc = { _id: 'oY', status: 'pending', statusHistory: [], save: jest.fn().mockResolvedValue(true), toObject: function() { return this; } };
+    Order.findById = jest.fn().mockResolvedValue(orderDoc);
+    const req = { params: { id: 'oY' }, body: { status: 'confirmed' }, user: { id: 'provA', role: 'provider' } };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    // spy on emitter
+    const emitter = require('../utils/events');
+    jest.spyOn(emitter, 'emit');
+
+    await orderController.updateStatus(req, res);
+    expect(orderDoc.statusHistory.length).toBe(1);
+    expect(orderDoc.statusHistory[0].status).toBe('confirmed');
+    expect(emitter.emit).toHaveBeenCalledWith(`order:${orderDoc._id}`, expect.objectContaining({ type: 'order.updated', order: expect.any(Object) }));
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test('blocks createOrder when date-overlap causes overbooking', async () => {
+    req.body.productId = 'p-avail';
+    req.body.quantity = 3;
+    req.body.rentalStart = '2026-03-10';
+    req.body.rentalEnd = '2026-03-12';
+
+    Product.findById.mockResolvedValue({ _id: 'p-avail', availableUnits: 4, title: 'Drill' });
+
+    // mock the availability util to report 2 units already reserved
+    jest.mock('../utils/availability', () => ({ reservedQuantity: jest.fn().mockResolvedValue(2) }));
+    // Re-require the module so our mock is picked up by the controller (node caching)
+    const availability = require('../utils/availability');
+    availability.reservedQuantity.mockResolvedValue(2);
+
+    await orderController.createOrder(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false, message: expect.stringContaining('not available') }));
+  });
+
+  test('allows createOrder when enough units available for requested dates', async () => {
+    req.body.productId = 'p-avail2';
+    req.body.quantity = 1;
+    req.body.rentalStart = '2026-03-10';
+    req.body.rentalEnd = '2026-03-12';
+
+    Product.findById.mockResolvedValue({ _id: 'p-avail2', availableUnits: 4, title: 'Drill' });
+    const availability = require('../utils/availability');
+    availability.reservedQuantity.mockResolvedValue(2);
+
+    Order.create.mockResolvedValue({ _id: 'o-new' });
+    await orderController.createOrder(req, res);
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, data: expect.objectContaining({ _id: 'o-new' }) }));
   });
 });

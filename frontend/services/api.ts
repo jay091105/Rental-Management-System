@@ -10,6 +10,11 @@ export const productService = {
     const response = await api.get<{ data: Product }>(`/products/${id}`);
     return response.data.data;
   },
+  // Fetch availability for a product between dates (returns { availableUnits })
+  getAvailability: async (id: string, startDate: string, endDate: string) => {
+    const response = await api.get(`/products/${id}/availability`, { params: { startDate, endDate } });
+    return response.data;
+  },
   // ... other methods
   create: async (data: Partial<Product>) => {
     const response = await api.post<{ data: Product }>('/products', data);
@@ -28,8 +33,9 @@ export const productService = {
 export const propertyService = productService;
 
 export const rentalService = {
-  create: async (data: Record<string, unknown>) => {
-    const response = await api.post<Rental>('/rentals', data);
+  create: async (data: Record<string, unknown>): Promise<any> => {
+    // server may return multiple envelopes (Rental | { order } | { success }) — keep client tolerant
+    const response = await api.post<any>('/rentals', data);
     return response.data;
   },
   getMyRentals: async () => {
@@ -76,6 +82,17 @@ export const paymentService = {
   }
 };
 
+export const invoiceService = {
+  getMy: async () => {
+    const response = await api.get('/invoices/my');
+    return response.data;
+  },
+  getById: async (id: string) => {
+    const response = await api.get(`/invoices/${id}`);
+    return response.data;
+  }
+};
+
 export const providerService = {
   getProducts: async () => {
     const response = await api.get('/provider/products');
@@ -91,7 +108,7 @@ export const providerService = {
 export const providerServiceLegacy = { ...providerService, getProperties: providerService.getProducts };
 
 export const orderService = {
-  create: async (data: { productId: string; quantity?: number }) => {
+  create: async (data: { productId: string; quantity?: number; startDate?: string; endDate?: string; rentalStart?: string; rentalEnd?: string }) => {
     const response = await api.post('/orders', data);
     return response.data;
   },
@@ -114,7 +131,7 @@ export const orderService = {
 };
 
 export const quotationService = {
-  create: async (data: { productId: string; quantity?: number }) => {
+  create: async (data: { productId: string; quantity?: number; startDate?: string; endDate?: string; rentalStart?: string; rentalEnd?: string }) => {
     const response = await api.post('/quotations', data);
     return response.data;
   },

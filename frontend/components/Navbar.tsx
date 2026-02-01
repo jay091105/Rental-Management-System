@@ -9,28 +9,49 @@ const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState<number>(0);
+  const [renterOrderCount, setRenterOrderCount] = useState<number>(0);
+  const [renterConfirmedCount, setRenterConfirmedCount] = useState<number>(0);
 
   const handleLogout = () => {
     logout();
     setMobileMenuOpen(false);
   };
 
-  // Poll provider orders count when provider is signed in
+  // Poll orders count for provider and renter (provider: pending; renter: total/confirmed)
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
     const fetchCount = async () => {
-      if (user?.role === 'provider') {
-        try {
+      try {
+        if (user?.role === 'provider') {
           const data = await (await import('@/services/api')).orderService.getProviderOrders();
           const list = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
           const count = Array.isArray(list) ? list.filter((o: any) => o.status === 'pending').length : 0;
           setPendingCount(count);
-        } catch (err) {
-          // ignore polling errors
-          console.error('Failed to fetch provider orders count', err);
+        } else {
+          setPendingCount(0);
         }
-      } else {
-        setPendingCount(0);
+
+        if (user?.role === 'renter') {
+          const data = await (await import('@/services/api')).orderService.getMyOrders();
+          const list = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.data)
+            ? data.data
+            : Array.isArray(data?.orders)
+            ? data.orders
+            : Array.isArray(data?.items)
+            ? data.items
+            : [];
+          const total = Array.isArray(list) ? list.length : 0;
+          const confirmed = Array.isArray(list) ? list.filter((o: any) => o.status === 'confirmed' || o.status === 'paid').length : 0;
+          setRenterOrderCount(total);
+          setRenterConfirmedCount(confirmed);
+        } else {
+          setRenterOrderCount(0);
+          setRenterConfirmedCount(0);
+        }
+      } catch (err) {
+        console.error('Failed to fetch orders count', err);
       }
     };
     fetchCount();
@@ -61,10 +82,6 @@ const Navbar = () => {
               {pendingCount > 0 && user?.role === 'provider' && (
                 <span className="absolute -top-2 -right-3 inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">{pendingCount}</span>
               )}
-            </Link>
-
-            <Link href="/invoices" className="text-gray-600 hover:text-blue-600 font-medium transition">
-              Invoices
             </Link>
 
             {isAuthenticated ? (
@@ -135,9 +152,6 @@ const Navbar = () => {
             </Link>
             <Link href="/orders" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
               Orders
-            </Link>
-            <Link href="/invoices" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
-              Invoices
             </Link>
             {isAuthenticated ? (
               <>

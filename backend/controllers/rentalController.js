@@ -1,5 +1,7 @@
 const Rental = require('../models/Rental');
 const Product = require('../models/Product');
+const Order = require('../models/Order');
+const Notification = require('../models/Notification');
 
 // Helper to map rental document to frontend-friendly shape
 const mapRental = (r) => ({
@@ -88,9 +90,55 @@ exports.createRental = async (req, res, next) => {
     });
 
     // populate product for response
-    await rental.populate({ path: 'product', select: 'title images price status' });
+    await rental.populate({ path: 'product', select: 'title images price status owner availableUnits' });
 
-    res.status(201).json({ success: true, data: mapRental(rental) });
+    // --- Create an Order (idempotent) and notify the provider immediately (status: pending) ---
+    let order = await Order.findOne({ rental: rental._id });
+    if (!order) {
+      const itemSnapshot = {
+        productSnapshot: {
+          _id: product._id,
+          title: product.title,
+          images: product.images,
+          price: unitPrice
+        },
+        quantity: reqQty,
+        price: unitPrice * days
+      };
+
+      order = await Order.create({
+        renter: req.user._id,
+        provider: product.owner,
+        product: product._id,
+        rental: rental._id,
+        meta: {
+          rentalStart: sd,
+          rentalEnd: ed,
+          quantity: reqQty,
+          renterName: req.user?.name || req.user?.email || 'A renter',
+          productName: product.title
+        },
+        items: [itemSnapshot],
+        totalAmount: totalCost,
+        status: 'pending'
+      });
+
+      // create a provider notification
+      try {
+        const renterName = req.user?.name || req.user?.email || 'A renter';
+        await Notification.create({
+          user: product.owner,
+          type: 'rental.request',
+          message: `${renterName} requested a rental for \"${product.title}\" (${reqQty} unit${reqQty>1?'s':''})`,
+          meta: { rentalId: rental._id.toString(), orderId: order._id.toString(), productId: product._id.toString(), renterId: req.user._id.toString() }
+        });
+      } catch (notifyErr) {
+        // non-fatal: log and continue
+        console.warn('Failed to create notification for provider:', notifyErr?.message || notifyErr);
+      }
+    }
+
+    res.status(201).json({ success: true, data: mapRental(rental), order });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }

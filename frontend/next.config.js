@@ -6,7 +6,10 @@ const nextConfig = {
         // Prefer remotePatterns for finer control (replaces deprecated `images.domains`)
         remotePatterns: [
             { protocol: 'http', hostname: 'localhost' },
-            { protocol: 'https', hostname: 'placehold.co' }
+            { protocol: 'https', hostname: 'placehold.co' },
+            { protocol: 'https', hostname: 'cdn.pixabay.com' },
+            { protocol: 'https', hostname: 'images.unsplash.com' },
+            { protocol: 'https', hostname: 'unsplash.com' }
         ]
     },
 

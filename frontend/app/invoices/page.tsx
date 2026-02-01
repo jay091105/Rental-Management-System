@@ -2,7 +2,7 @@
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useState, useEffect } from 'react';
-import { paymentService } from '@/services/api';
+import { paymentService, invoiceService } from '@/services/api';
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -11,8 +11,7 @@ export default function InvoicesPage() {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const res = await fetch('/api/invoices/my');
-        const data = await res.json();
+        const data = await invoiceService.getMy();
         if (data.success) setInvoices(data.data || []);
       } catch (err) {
         console.error('Failed to fetch invoices', err);
@@ -31,8 +30,7 @@ export default function InvoicesPage() {
       if (paymentId) {
         await paymentService.mock(paymentId, 'success');
         // refresh
-        const res = await fetch('/api/invoices/my');
-        const data = await res.json();
+        const data = await invoiceService.getMy();
         if (data.success) setInvoices(data.data || []);
       }
     } catch (err) {

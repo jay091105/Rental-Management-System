@@ -5,6 +5,7 @@ import { providerService } from '@/services/api';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
 import Image from 'next/image';
+import { isLikelyImageUrl, normalizeImageSrc } from '@/lib/image';
 import { Product } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -49,7 +50,11 @@ export default function ProviderProductsPage() {
               <div key={p._id || p.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <div className="relative aspect-[4/3] bg-gray-100">
                   {p.images && p.images.length > 0 ? (
-                    <Image src={p.images[0]} alt={p.title} fill className="object-cover" sizes="100%" />
+                    (() => {
+                      const raw = p.images[0];
+                      const safe = isLikelyImageUrl(raw) ? (normalizeImageSrc(raw) ?? raw) : '/file.svg';
+                      return <Image src={safe} alt={p.title} fill className="object-cover" sizes="100%" />;
+                    })()
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
                       <span className="text-sm font-medium">No Image</span>

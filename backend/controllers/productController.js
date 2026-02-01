@@ -121,6 +121,28 @@ exports.getProduct = async (req, res, next) => {
     }
 };
 
+// @desc    Get availability for a product within a date range
+// @route   GET /api/products/:id/availability?start=&end=
+// @access  Public
+exports.getAvailability = async (req, res, next) => {
+  try {
+    const { start, end } = req.query;
+    const product = await Product.findById(req.params.id).select('availableUnits');
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    if (!start || !end) {
+      return res.status(200).json({ success: true, data: { availableUnits: product.availableUnits } });
+    }
+
+    const { reservedQuantity } = require('../utils/availability');
+    const reserved = await reservedQuantity(product._id, start, end);
+    const available = Math.max(0, (Number(product.availableUnits || 0) - Number(reserved || 0)));
+    res.status(200).json({ success: true, data: { availableUnits: available, reserved } });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // @desc    Create new product
 // @route   POST /api/products
 // @access  Private (Owner/Admin)

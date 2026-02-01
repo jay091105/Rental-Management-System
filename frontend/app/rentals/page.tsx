@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { rentalService } from '@/services/api';
 import { Rental } from '@/types';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -8,6 +10,7 @@ import Loading from '@/components/Loading';
 import { Calendar, Tag, CheckCircle, Clock, XCircle } from 'lucide-react';
 
 export default function RentalsPage() {
+  const router = useRouter();
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -88,16 +91,25 @@ export default function RentalsPage() {
                           // initiate payment and simulate success for now
                           const rentalId = rental.id ?? rental._id;
                           const res = await (await import('@/services/api')).paymentService.process(rentalId);
-                          const paymentId = res.data._id || res.data.id || res.data._id;
+                          const paymentId = res.data._id || res.data.id;
                           if (paymentId) {
-                            await (await import('@/services/api')).paymentService.mock(paymentId, 'success');
-                            // refresh
+                            const mockRes = await (await import('@/services/api')).paymentService.mock(paymentId, 'success');
+
+                            // If backend returned an invoice/order for this payment, navigate to invoices and notify user
+                            const invoice = mockRes?.invoice || mockRes?.data?.invoice || mockRes?.data?.data?.invoice;
+                            if (invoice && invoice._id) {
+                              toast.success('Invoice generated — opening invoices');
+                              router.push('/invoices');
+                              return;
+                            }
+
+                            // otherwise refresh rentals
                             const data = await (await import('@/services/api')).rentalService.getMyRentals();
                             setRentals(data);
                           }
                         } catch (err) {
                           console.error('Payment failed', err);
-                          alert('Payment failed');
+                          (await import('react-hot-toast')).toast.error('Payment failed');
                         }
                       }}
                       className="ml-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition"

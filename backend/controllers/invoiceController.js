@@ -38,9 +38,15 @@ exports.getInvoice = async (req, res, next) => {
 
 exports.getMyInvoices = async (req, res, next) => {
     try {
-        // invoices where user's orders are involved
-        const invoices = await Invoice.find().populate({ path: 'order', match: { renter: req.user.id } });
-        const filtered = invoices.filter(i => i.order);
+        // Return invoices where the requesting user is the renter OR the provider for the linked order.
+        // Populate the order so we can authorize and filter in JS (keeps the query simple and clear).
+        const invoices = await Invoice.find().populate('order');
+        const filtered = invoices.filter(i => {
+            if (!i.order) return false;
+            const renterId = i.order.renter?.toString?.();
+            const providerId = i.order.provider?.toString?.();
+            return renterId === req.user.id || providerId === req.user.id;
+        });
         res.status(200).json({ success: true, count: filtered.length, data: filtered });
     } catch (err) {
         next(err);

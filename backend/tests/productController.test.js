@@ -120,4 +120,32 @@ describe('productController.createProduct validation', () => {
 
     expect(res.status).toHaveBeenCalledWith(404);
   });
+
+  test('getAvailability returns product.availableUnits when no dates provided', async () => {
+    Product.findById.mockResolvedValue({ _id: 'p1', availableUnits: 5 });
+    const req = { params: { id: 'p1' }, query: {} };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+
+    await productController.getAvailability(req, res);
+    expect(Product.findById).toHaveBeenCalledWith('p1');
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, data: { availableUnits: 5 } }));
+  });
+
+  test('getAvailability returns adjusted availability when reservedQuantity reports reservations', async () => {
+    const req = { params: { id: 'p2' }, query: { start: '2026-04-01', end: '2026-04-05' } };
+    Product.findById.mockResolvedValue({ _id: 'p2', availableUnits: 4 });
+
+    // mock the availability util
+    jest.mock('../utils/availability', () => ({ reservedQuantity: jest.fn().mockResolvedValue(2) }));
+    const availability = require('../utils/availability');
+    availability.reservedQuantity.mockResolvedValue(2);
+
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+    await productController.getAvailability(req, res);
+
+    expect(availability.reservedQuantity).toHaveBeenCalledWith('p2', '2026-04-01', '2026-04-05');
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, data: { availableUnits: 2, reserved: 2 } }));
+  });
 });

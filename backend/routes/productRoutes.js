@@ -18,6 +18,9 @@ router.route('/')
     .get(optionalAuth, getProducts)
     .post(protect, authorize('provider','admin'), createProduct);
 
+router.route('/:id/availability')
+  .get(optionalAuth, require('../controllers/productController').getAvailability);
+
 router.route('/:id')
     .get(optionalAuth, getProduct)
     .put(protect, authorize('provider','admin'), ensureOwnership('Product','id'), updateProduct)

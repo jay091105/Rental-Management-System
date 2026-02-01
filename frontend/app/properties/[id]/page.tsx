@@ -20,6 +20,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import Image from 'next/image';
+import { isLikelyImageUrl, normalizeImageSrc } from '@/lib/image';
 import toast from 'react-hot-toast';
 
 export default function ProductDetailsPage() {
@@ -36,6 +37,8 @@ export default function ProductDetailsPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [availability, setAvailability] = useState<number | null>(null);
+  const [orderQty, setOrderQty] = useState(1);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [reviewLoading, setReviewLoading] = useState(false);
 
@@ -58,6 +61,24 @@ export default function ProductDetailsPage() {
     if (id) fetchProductAndReviews();
   }, [id]);
 
+  // Fetch availability when dates change
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!startDate || !endDate) {
+        setAvailability(null);
+        return;
+      }
+      try {
+        const res = await productService.getAvailability(id, startDate, endDate);
+        setAvailability(res?.data?.availableUnits ?? null);
+      } catch (err) {
+        console.error('Failed to fetch availability', err);
+        setAvailability(null);
+      }
+    };
+    fetchAvailability();
+  }, [startDate, endDate, id]);
+
   const addToCart = async () => {
     if (!isAuthenticated) {
       router.push('/login');
@@ -66,14 +87,31 @@ export default function ProductDetailsPage() {
 
     setRentalLoading(true);
     try {
-      await rentalService.create({
+      const resp = await rentalService.create({
         productId: id,
         startDate,
         endDate,
         quantity,
         rentalDuration,
       });
-      toast.success('Rental request sent successfully!');
+
+      // Backend now returns the created Order when a rental request is made (status: pending)
+      const order = resp?.order || resp?.data?.order;
+      if (order && order._id) {
+        toast.success('Request submitted — provider notified.');
+        router.push('/orders');
+        return;
+      }
+
+      if (resp?.success) {
+        toast.success('Rental request sent successfully!');
+        router.push('/rentals');
+        return;
+      }
+
+      // Fallback
+      toast.success('Rental request sent');
+      router.push('/rentals');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       toast.error(error.response?.data?.message || 'Failed to create rental.');
@@ -171,14 +209,20 @@ export default function ProductDetailsPage() {
               <div className="space-y-4 sticky top-28">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
                   {product.images && product.images.length > 0 ? (
-                    <Image
-                      src={product.images[selectedImage]}
-                      alt={product.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      priority
-                    />
+                    (() => {
+                      const raw = product.images[selectedImage];
+                      const safe = isLikelyImageUrl(raw) ? (normalizeImageSrc(raw) ?? raw) : '/file.svg';
+                      return (
+                        <Image
+                          src={safe}
+                          alt={product.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                          priority
+                        />
+                      );
+                    })()
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Package className="w-20 h-20 text-gray-300" />
@@ -207,13 +251,18 @@ export default function ProductDetailsPage() {
                             : 'border-transparent hover:border-gray-200'
                         }`}
                       >
-                        <Image
-                          src={img}
-                          alt={`${product.title} ${idx + 1}`}
-                          fill
-                          className="object-cover"
-                          sizes="100px"
-                        />
+                        {(() => {
+                          const safe = isLikelyImageUrl(img) ? (normalizeImageSrc(img) ?? img) : '/file.svg';
+                          return (
+                            <Image
+                              src={safe}
+                              alt={`${product.title} ${idx + 1}`}
+                              fill
+                              className="object-cover"
+                              sizes="100px"
+                            />
+                          );
+                        })()}
                       </button>
                     ))}
                   </div>
@@ -315,9 +364,14 @@ export default function ProductDetailsPage() {
                           Quantity
                         </label>
                         <span className="text-xs text-blue-600 font-medium">
-                          {product.availableUnits} available
+                          {availability ?? product.availableUnits} available
                         </span>
                       </div>
+
+                      {availability !== null && (
+                        <p className="text-sm text-gray-500 mt-2">Showing availability for selected dates</p>
+                      )}
+
                       <div className="mt-2 flex items-center gap-3">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -327,13 +381,17 @@ export default function ProductDetailsPage() {
                         </button>
                         <span className="flex-1 text-center font-bold text-gray-900">{quantity}</span>
                         <button
-                          onClick={() => setQuantity(Math.min(product!.availableUnits, quantity + 1))}
-                          disabled={quantity >= (product?.availableUnits || 0)}
+                          onClick={() => setQuantity(Math.min((availability ?? product!.availableUnits), quantity + 1))}
+                          disabled={quantity >= ((availability ?? product?.availableUnits) || 0)}
                           className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors disabled:opacity-50"
                         >
                           <Plus size={16} />
                         </button>
                       </div>
+
+                      {availability !== null && quantity > (availability || 0) && (
+                        <p className="text-sm text-red-500 mt-2">Requested quantity exceeds availability for the selected dates.</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -367,7 +425,14 @@ export default function ProductDetailsPage() {
 
                 <button
                   onClick={addToCart}
-                  disabled={rentalLoading || (product?.availableUnits || 0) === 0 || !startDate || !endDate || new Date(startDate) >= new Date(endDate)}
+                  disabled={
+                    rentalLoading ||
+                    ((availability ?? product?.availableUnits) || 0) === 0 ||
+                    !startDate ||
+                    !endDate ||
+                    new Date(startDate) > new Date(endDate) ||
+                    quantity > ((availability ?? product?.availableUnits) || 0)
+                  }
                   className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={20} />
@@ -431,15 +496,32 @@ export default function ProductDetailsPage() {
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-6">
                   <h4 className="text-lg font-bold mb-3">Request Order / Quote</h4>
                   <div className="flex gap-3 items-center">
-                    <input type="number" min={1} defaultValue={1} id="orderQty" className="w-28 p-2 border rounded" />
+                    <input
+                      type="number"
+                      min={1}
+                      value={orderQty}
+                      onChange={(e) => setOrderQty(Math.max(1, Number(e.target.value || 1)))}
+                      id="orderQty"
+                      className="w-28 p-2 border rounded"
+                    />
+
                     <button
                       onClick={async (e) => {
                         e.preventDefault();
-                        const qtyInput = document.getElementById('orderQty') as HTMLInputElement;
-                        const qty = Number(qtyInput?.value || 1);
+                        const qty = orderQty;
+
+                        if (!startDate || !endDate || new Date(startDate) > new Date(endDate)) {
+                          toast.error('Please select valid start and end dates before requesting an order');
+                          return;
+                        }
+                        if (availability !== null && qty > availability) {
+                          toast.error('Requested quantity exceeds availability for selected dates');
+                          return;
+                        }
+
                         try {
-                          const data = await orderService.create({ productId: product?._id, quantity: qty });
-                          if (data?.success) {
+                          const data = await orderService.create({ productId: product?._id, quantity: qty, rentalStart: startDate, rentalEnd: endDate });
+                          if (data?.success || data?.order) {
                             toast.success('Order requested successfully');
                             router.push('/orders');
                           } else {
@@ -450,15 +532,26 @@ export default function ProductDetailsPage() {
                           toast.error(err?.response?.data?.message || 'Failed to create order');
                         }
                       }}
-                      className="bg-blue-600 text-white px-4 py-2 rounded"
+                      disabled={!startDate || !endDate || new Date(startDate) > new Date(endDate) || (availability !== null && orderQty > availability)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
                     >Request Order</button>
+
                     <button
                       onClick={async (e) => {
                         e.preventDefault();
-                        const qtyInput = document.getElementById('orderQty') as HTMLInputElement;
-                        const qty = Number(qtyInput?.value || 1);
+                        const qty = orderQty;
+
+                        if (!startDate || !endDate || new Date(startDate) > new Date(endDate)) {
+                          toast.error('Please select valid start and end dates before requesting a quotation');
+                          return;
+                        }
+                        if (availability !== null && qty > availability) {
+                          toast.error('Requested quantity exceeds availability for selected dates');
+                          return;
+                        }
+
                         try {
-                          const data = await quotationService.create({ productId: product?._id, quantity: qty });
+                          const data = await quotationService.create({ productId: product?._id, quantity: qty, rentalStart: startDate, rentalEnd: endDate });
                           if (data?.success) {
                             toast.success('Quotation requested successfully');
                             router.push('/quotations');
@@ -470,8 +563,11 @@ export default function ProductDetailsPage() {
                           toast.error(err?.response?.data?.message || 'Failed to request quotation');
                         }
                       }}
-                      className="bg-gray-900 text-white px-4 py-2 rounded"
-                    >Request Quote</button>
+                      disabled={!startDate || !endDate || new Date(startDate) > new Date(endDate) || (availability !== null && orderQty > availability)}
+                      className="bg-gray-900 text-white px-4 py-2 rounded disabled:opacity-50"
+                    >
+                      Request Quote
+                    </button>
                   </div>
                 </div>
 

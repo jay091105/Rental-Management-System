@@ -8,6 +8,7 @@ router.use(protect);
 router.post('/', orderController.createOrder);
 router.get('/my', orderController.getMyOrders);
 router.get('/provider', orderController.getProviderOrders);
+router.get('/:id/stream', orderController.streamOrder);
 router.get('/:id', orderController.getOrder);
 router.patch('/:id/status', orderController.updateStatus);
 
