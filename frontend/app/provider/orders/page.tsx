@@ -147,9 +147,37 @@ export default function ProviderOrdersPage() {
                     </Link>
                     
                     {invoiceMap[o._id] && (
-                      <Link href={`/invoice/${invoiceMap[o._id]._id}`} className="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition" title="View Invoice">
-                        <FileText size={18} />
-                      </Link>
+                      <>
+                        <Link href={`/invoice/${invoiceMap[o._id]._id}`} className="p-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition" title="View Invoice">
+                          <FileText size={18} />
+                        </Link>
+
+                        <button
+                          onClick={async () => {
+                            try {
+                              const id = invoiceMap[o._id]._id;
+                              const blob = await (await import('@/services/api')).invoiceService.download(id);
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `invoice-${id}.pdf`;
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                              window.URL.revokeObjectURL(url);
+                            } catch (err) {
+                              console.error(err);
+                              (await import('react-hot-toast')).toast.error('Failed to download invoice');
+                            }
+                          }}
+                          className="p-2.5 rounded-xl border border-gray-200 bg-black text-white hover:opacity-95 transition"
+                          title="Download Invoice"
+                        >Download</button>
+
+                        {invoiceMap[o._id].paymentStatus && (
+                          <div className="ml-2 text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">{invoiceMap[o._id].paymentStatus}</div>
+                        )}
+                      </>
                     )}
 
                     {o.status === 'pending' && (

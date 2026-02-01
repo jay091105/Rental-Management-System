@@ -117,6 +117,36 @@ export default function OrderDetailPage() {
                 className="bg-gray-100 text-sm px-3 py-2 rounded"
               >Refresh</button>
 
+              {/* Renter: download invoice if available */}
+              {user && user.role === 'renter' && (order.invoice || order.invoiceId) && (
+                <button
+                  disabled={actionLoading}
+                  onClick={async () => {
+                    setActionLoading(true);
+                    try {
+                      const id = order.invoice?._id || order.invoiceId || (order.invoice && order.invoice._id) || null;
+                      if (!id) return toast.error('Invoice not available');
+                      const blob = await (await import('@/services/api')).invoiceService.download(id);
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `invoice-${id}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      window.URL.revokeObjectURL(url);
+                      toast.success('Invoice download started');
+                    } catch (err: any) {
+                      console.error(err);
+                      toast.error(err?.response?.data?.message || 'Failed to download invoice');
+                    } finally {
+                      setActionLoading(false);
+                    }
+                  }}
+                  className="bg-black text-white px-4 py-2 rounded-xl mr-2"
+                >Download Invoice</button>
+              )}
+
               {user && (user.role === 'provider' || user.role === 'admin') && order.status === 'pending' && (
                 <div className="flex gap-3">
                   <button

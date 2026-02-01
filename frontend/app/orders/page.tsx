@@ -107,12 +107,38 @@ export default function OrdersPage() {
                           </div>
                           <div className="text-sm text-gray-500 font-medium">₹{o.totalAmount?.toLocaleString()} • {new Date(o.createdAt).toLocaleDateString()}</div>
                         </div>
-                        <Link 
-                          href={`/orders/${o._id}`} 
-                          className="w-full sm:w-auto text-center px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 hover:bg-gray-50 transition"
-                        >
-                          View Details
-                        </Link>
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                          <Link 
+                            href={`/orders/${o._id}`} 
+                            className="text-center px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 hover:bg-gray-50 transition"
+                          >
+                            View Details
+                          </Link>
+
+                          { (o.invoice || o.invoiceId) && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const id = o.invoice?._id || o.invoiceId;
+                                  if (!id) return;
+                                  const blob = await (await import('@/services/api')).invoiceService.download(id);
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = `invoice-${id}.pdf`;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  a.remove();
+                                  window.URL.revokeObjectURL(url);
+                                } catch (err) {
+                                  console.error(err);
+                                  (await import('react-hot-toast')).toast.error('Failed to download invoice');
+                                }
+                              }}
+                              className="bg-black text-white px-4 py-2 rounded-xl text-sm font-bold"
+                            >Download Invoice</button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

@@ -18,15 +18,7 @@ export default function AdminDashboard() {
     rentals: 0,
   });
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [users, properties, rentals] = await Promise.all([
-          userService.getAll(),
-          productService.getAll(),
-          rentalService.getAll(),
-        ]);
+    
         setStats({
           users: users.length,
           properties: properties.length,

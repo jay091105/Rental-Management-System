@@ -36,6 +36,33 @@ exports.getInvoice = async (req, res, next) => {
     }
 };
 
+// Download invoice PDF (renter/vendor/admin)
+exports.downloadInvoice = async (req, res, next) => {
+  try {
+    const invoice = await Invoice.findById(req.params.id).populate('order customer vendor');
+    if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
+
+    const order = invoice.order;
+    // Authorization
+    const renterId = order?.renter?.toString?.();
+    const providerId = order?.provider?.toString?.();
+    if (req.user.role !== 'admin' && req.user.id !== renterId && req.user.id !== providerId) {
+      return res.status(403).json({ success: false, message: 'Not authorized to download this invoice' });
+    }
+
+    const generateInvoicePDF = require('../utils/generateInvoicePDF');
+    const pdfStream = generateInvoicePDF(invoice.toObject ? invoice.toObject() : invoice);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=invoice-${invoice._id}.pdf`);
+
+    // Pipe PDF stream to response
+    pdfStream.pipe(res);
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getMyInvoices = async (req, res, next) => {
     try {
         // Return invoices where the requesting user is the renter OR the provider for the linked order.

@@ -90,6 +90,11 @@ export const invoiceService = {
   getById: async (id: string) => {
     const response = await api.get(`/invoices/${id}`);
     return response.data;
+  },
+  // Download invoice PDF (returns blob)
+  download: async (id: string) => {
+    const response = await api.get(`/invoices/${id}/download`, { responseType: 'blob' });
+    return response.data;
   }
 };
 

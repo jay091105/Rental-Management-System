@@ -48,7 +48,18 @@ exports.createOrder = async (req, res, next) => {
             }
         });
 
-        res.status(201).json({ success: true, data: order });
+        // Attempt to auto-create an invoice for this order (idempotent). If invoice exists,
+        // we won't duplicate it. The helper is async and failures should not break order creation.
+        try {
+          const invoice = await exports.createInvoiceFromOrder(order);
+          // attach invoice (if any) to the returned order object in a backward-compatible way
+          const out = order.toObject ? order.toObject() : order;
+          if (invoice && invoice._id) out.invoice = invoice;
+          return res.status(201).json({ success: true, data: out });
+        } catch (invErr) {
+          console.warn('[orderController] invoice auto-generation failed:', invErr?.message || invErr);
+          return res.status(201).json({ success: true, data: order });
+        }
     } catch (err) {
         next(err);
     }
@@ -177,6 +188,60 @@ exports.getProviderOrders = async (req, res, next) => {
 
 const emitter = require('../utils/events');
 
+// Helper: create an invoice from an order (idempotent). Returns the invoice document or null.
+exports.createInvoiceFromOrder = async (order) => {
+  const Invoice = require('../models/Invoice');
+  const Notification = require('../models/Notification');
+  const Order = require('../models/Order');
+
+  // Accept either an _id or a populated order document
+  const ord = order.toObject ? order.toObject() : order;
+  const orderId = ord._id || ord.id;
+  if (!orderId) throw new Error('order._id required to create invoice');
+
+  // Idempotency: return existing invoice if present
+  const existing = await Invoice.findOne({ order: orderId });
+  if (existing) return existing;
+
+  // Build invoice payload from order (keep legacy `amount` while filling new fields)
+  const items = ord.items || [];
+  const subtotal = typeof ord.subtotal === 'number' ? ord.subtotal : (ord.totalAmount || 0);
+  const taxAmount = typeof ord.taxAmount === 'number' ? ord.taxAmount : Math.round((subtotal || 0) * 0.06 * 100) / 100; // default 6% if not provided
+  const totalAmount = typeof ord.totalAmount === 'number' ? ord.totalAmount : (subtotal + taxAmount);
+  const securityDeposit = ord.financial?.depositHeld || 0;
+
+  const payload = {
+    order: orderId,
+    customer: ord.renter || ord.customer || null,
+    vendor: ord.provider || ord.vendor || null,
+    items,
+    subtotal,
+    taxAmount,
+    totalAmount,
+    amount: totalAmount, // legacy field
+    amountPaid: 0,
+    balanceDue: totalAmount,
+    paymentStatus: 'draft',
+    securityDeposit,
+    issuedAt: new Date()
+  };
+
+  const created = await Invoice.create(payload);
+
+  // Notify vendor (if Notification model exists) — follow existing notification patterns
+  try {
+    if (payload.vendor) {
+      await Notification.create({ user: payload.vendor, type: 'INVOICE_GENERATED', message: `Invoice generated for Order #${orderId}`, meta: { order: orderId, invoice: created._id } });
+      console.log('Notification created for provider', payload.vendor);
+    } else {
+      console.log('Invoice generated, vendor not found on order — skipping notification');
+    }
+  } catch (nErr) {
+    console.warn('Failed to create notification for invoice generation:', nErr?.message || nErr);
+  }
+
+  return created;
+};
 exports.updateStatus = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
