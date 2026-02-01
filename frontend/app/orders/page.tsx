@@ -3,6 +3,7 @@
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useState, useEffect } from 'react';
 import { orderService } from '@/services/api';
+import Link from 'next/link';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -57,58 +58,66 @@ export default function OrdersPage() {
 
   return (
     <ProtectedRoute>
-      <div className="p-8">
-        <h1 className="text-2xl font-bold">My Orders</h1>
-        <p className="text-gray-600 mt-2">Orders you have requested.</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">My Orders</h1>
+          <p className="text-sm text-gray-500">View and track your rental requests and confirmed orders.</p>
+        </div>
 
         {loading ? (
-          <div className="mt-6">Loading...</div>
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+          </div>
         ) : error ? (
-          <div className="mt-6 text-red-600">{error}</div>
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-red-700 text-sm">
+            {error}
+          </div>
         ) : (
-          <div className="mt-6 space-y-4">
+          <div className="space-y-4">
             {orders.length === 0 ? (
-              <div>
-                <div className="text-gray-500 mb-3">No orders found.</div>
-                <div className="flex items-center gap-3">
-                  <button onClick={() => fetchOrders()} className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg">Refresh</button>
-                  <button
-                    onClick={async () => {
-                      try {
-                        const resp = await (await import('@/services/api')).orderService.getMyOrders();
-                        console.debug('manual getMyOrders:', resp);
-                        setRawResponse(resp);
-                      } catch (err) {
-                        console.error(err);
-                        setRawResponse(err?.response?.data || err);
-                      }
-                    }}
-                    className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-lg"
-                  >Fetch & show API response</button>
-                </div>
-
-                {rawResponse && (
-                  <details className="mt-4 bg-black/5 p-4 rounded-lg border border-dashed border-gray-200">
-                    <summary className="cursor-pointer text-sm font-medium text-gray-700">API response (debug)</summary>
-                    <pre className="mt-3 max-h-80 overflow-auto text-xs text-gray-800">{JSON.stringify(rawResponse, null, 2)}</pre>
-                  </details>
-                )}
+              <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                <div className="text-gray-400 mb-4 font-medium">No orders found.</div>
+                <button onClick={() => fetchOrders()} className="bg-black text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition">
+                  Refresh Orders
+                </button>
               </div>
             ) : (
-              orders.map((o: any) => (
-                <div key={o._id} className="bg-white p-4 rounded-lg border">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="text-sm font-semibold">Order #{o._id}</div>
-                      <div className="text-xs text-gray-500">Amount: ₹{o.totalAmount}</div>
-                      <div className="text-xs text-gray-400">Status: {o.status}</div>
+              <div className="grid grid-cols-1 gap-4">
+                {orders.map((o: any) => {
+                  const getStatusStyle = (status: string) => {
+                    switch (status?.toLowerCase()) {
+                      case 'draft': return 'bg-gray-100 text-gray-700';
+                      case 'confirmed': return 'bg-blue-50 text-blue-700';
+                      case 'picked up': return 'bg-purple-50 text-purple-700';
+                      case 'returned': return 'bg-green-50 text-green-700';
+                      case 'late': return 'bg-red-50 text-red-700';
+                      default: return 'bg-gray-50 text-gray-600';
+                    }
+                  };
+
+                  return (
+                    <div key={o._id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold text-gray-900">Order #{o._id?.slice(-8).toUpperCase()}</span>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(o.status)}`}>
+                              {o.status || 'Pending'}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-500 font-medium">₹{o.totalAmount?.toLocaleString()} • {new Date(o.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        <Link 
+                          href={`/orders/${o._id}`} 
+                          className="w-full sm:w-auto text-center px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 hover:bg-gray-50 transition"
+                        >
+                          View Details
+                        </Link>
+                      </div>
                     </div>
-                    <div>
-                      <a href={`/orders/${o._id}`} className="text-blue-600">View</a>
-                    </div>
-                  </div>
-                </div>
-              ))
+                  );
+                })}
+              </div>
             )}
           </div>
         )}

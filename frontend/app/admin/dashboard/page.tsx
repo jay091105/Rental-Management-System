@@ -51,27 +51,25 @@ export default function AdminDashboard() {
 
   return (
     <ProtectedRoute allowedRoles={['admin']}>
-      <div className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="bg-blue-600 p-3 rounded-xl text-white">
-            <LayoutDashboard className="w-8 h-8" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Overview</h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Admin Dashboard</h1>
+          <p className="text-sm text-gray-500">Manage your platform's users, properties, and rentals.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((card) => (
             <Link key={card.title} href={card.link} className="group">
-              <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className={`${card.bg} ${card.color} p-3 rounded-xl`}>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`${card.bg} ${card.color} p-2.5 rounded-xl`}>
                     <card.icon className="w-6 h-6" />
                   </div>
-                  <span className="text-4xl font-bold text-gray-900">{card.value}</span>
+                  <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-black group-hover:translate-x-1 transition-all" />
                 </div>
-                <div className="flex justify-between items-center">
-                  <h3 className="font-semibold text-gray-600">{card.title}</h3>
-                  <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-blue-600 group-hover:translate-x-1 transition" />
+                <div>
+                  <p className="text-sm font-medium text-gray-500">{card.title}</p>
+                  <h3 className="text-3xl font-bold text-gray-900 mt-1">{card.value}</h3>
                 </div>
               </div>
             </Link>

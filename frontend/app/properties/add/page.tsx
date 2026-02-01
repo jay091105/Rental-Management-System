@@ -90,214 +90,253 @@ export default function AddProductPage() {
 
   return (
     <ProtectedRoute allowedRoles={['admin', 'provider']}>
-      <div className="max-w-2xl mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-8">Add New Product</h1>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-10 space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Add New Product</h1>
+          <p className="text-gray-500">List your item for rent and start earning.</p>
+        </div>
         
         {error && (
-          <div className="mb-4 p-4 text-red-600 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-8 p-4 text-red-600 bg-red-50 border border-red-100 rounded-2xl text-sm font-medium">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input
-              type="text"
-              name="title"
-              required
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Product Title"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+            <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
+            
+            <div className="grid grid-cols-1 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                  placeholder="e.g. Professional DSLR Camera"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              name="description"
-              required
-              rows={4}
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Describe your product..."
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                <textarea
+                  name="description"
+                  required
+                  rows={4}
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                  placeholder="Describe your product in detail..."
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select
-              name="category"
-              required
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-              <option value="Real Estate">Real Estate</option>
-              <option value="Vehicles">Vehicles</option>
-              <option value="Equipment & Tools">Equipment & Tools</option>
-              <option value="Electronics">Electronics</option>
-              <option value="Events & Party">Events & Party</option>
-              <option value="Furniture">Furniture</option>
-              <option value="Fashion">Fashion</option>
-              <option value="Sports & Outdoors">Sports & Outdoors</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                  <select
+                    name="category"
+                    required
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition bg-white"
+                  >
+                    <option value="Real Estate">Real Estate</option>
+                    <option value="Vehicles">Vehicles</option>
+                    <option value="Equipment & Tools">Equipment & Tools</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Events & Party">Events & Party</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Sports & Outdoors">Sports & Outdoors</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <input
-              type="text"
-              name="location"
-              required
-              value={formData.location}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Pickup Location"
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    required
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                    placeholder="e.g. Mumbai, Maharashtra"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-            <input
-              type="url"
-              name="imageURL"
-              value={formData.imageURL}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
+          <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+            <h2 className="text-xl font-semibold text-gray-900">Pricing & Inventory</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Rent (₹/hour)</label>
+                <input
+                  type="number"
+                  name="pricePerHour"
+                  min="0"
+                  value={formData.pricePerHour}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Other Image URLs (comma separated)</label>
-            <input
-              type="text"
-              name="photosCSV"
-              value={formData.photosCSV}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="https://a.jpg, https://b.jpg"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Rent (₹/day)</label>
+                <input
+                  type="number"
+                  name="pricePerDay"
+                  min="0"
+                  value={formData.pricePerDay}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                />
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rent Amount ($/hour)</label>
-              <input
-                type="number"
-                name="pricePerHour"
-                min="0"
-                value={formData.pricePerHour}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Rent (₹/month)</label>
+                <input
+                  type="number"
+                  name="pricePerMonth"
+                  min="0"
+                  value={formData.pricePerMonth}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rent Amount ($/day)</label>
-              <input
-                type="number"
-                name="pricePerDay"
-                min="0"
-                value={formData.pricePerDay}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Available Units</label>
+                <input
+                  type="number"
+                  name="availableUnits"
+                  min="0"
+                  value={formData.availableUnits}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rent Amount ($/month)</label>
-              <input
-                type="number"
-                name="pricePerMonth"
-                min="0"
-                value={formData.pricePerMonth}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-          </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Security Deposit (₹)</label>
+                <input
+                  type="number"
+                  name="deposit"
+                  min="0"
+                  value={formData.deposit}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                />
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Available Units</label>
-              <input
-                type="number"
-                name="availableUnits"
-                min="0"
-                value={formData.availableUnits}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Delivery Fee (₹)</label>
+                <input
+                  type="number"
+                  name="deliveryCharges"
+                  min="0"
+                  value={formData.deliveryCharges}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                />
+              </div>
             </div>
+          </section>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Deposit</label>
-              <input
-                type="number"
-                name="deposit"
-                min="0"
-                value={formData.deposit}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
+          <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+            <h2 className="text-xl font-semibold text-gray-900">Media & Details</h2>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Main Image URL</label>
+                <input
+                  type="url"
+                  name="imageURL"
+                  value={formData.imageURL}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Charges</label>
-              <input
-                type="number"
-                name="deliveryCharges"
-                min="0"
-                value={formData.deliveryCharges}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Other Image URLs (comma separated)</label>
+                <input
+                  type="text"
+                  name="photosCSV"
+                  value={formData.photosCSV}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                  placeholder="https://a.jpg, https://b.jpg"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Brand Name</label>
+                  <input
+                    type="text"
+                    name="brandName"
+                    value={formData.brandName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                    placeholder="e.g. Sony"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Colour</label>
+                  <input
+                    type="text"
+                    name="colour"
+                    value={formData.colour}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition"
+                    placeholder="e.g. Black"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
 
           {user?.role === 'admin' && (
-            <div className="flex items-center gap-4 mt-4">
-              <label className="text-sm font-medium text-gray-700">Publish product</label>
-              <input type="checkbox" name="published" checked={formData.published} onChange={handleChange} />
+            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+              <input 
+                type="checkbox" 
+                name="published" 
+                id="published"
+                checked={formData.published} 
+                onChange={handleChange}
+                className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+              />
+              <label htmlFor="published" className="text-sm font-semibold text-gray-700 select-none cursor-pointer">Publish immediately</label>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
-              <input
-                type="text"
-                name="brandName"
-                value={formData.brandName}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Colour</label>
-              <input
-                type="text"
-                name="colour"
-                value={formData.colour}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
+          <div className="flex items-center gap-4 pt-4">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex-1 px-6 py-3 border border-gray-300 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-[2] bg-black text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg shadow-black/5 disabled:opacity-50"
+            >
+              {isSubmitting ? 'Creating listing...' : 'Create Listing'}
+            </button>
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-md disabled:opacity-50"
-          >
-            {isSubmitting ? 'Adding Product...' : 'Add Product'}
-          </button>
         </form>
       </div>
     </ProtectedRoute>
